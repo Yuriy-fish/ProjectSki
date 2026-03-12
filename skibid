@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<title>If You Fall</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:#141820;color:#d0d8e8;overflow:hidden;width:100vw;height:100vh}
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none}
+.screen.active{display:flex}
+
+/* MENU */
+#mainMenu{background:linear-gradient(135deg,#1a1f2e,#1e2538,#1a2030)}
+#bgCanvas{position:absolute;inset:0;width:100%;height:100%}
+.menu-layout{position:relative;z-index:5;display:flex;width:100%;height:100%}
+.menu-left{flex:1;position:relative;overflow:hidden}
+#sceneCanvas{position:absolute;inset:0;width:100%;height:100%}
+.title-block{position:absolute;bottom:70px;left:0;right:0;text-align:center;background:linear-gradient(to top,rgba(12,16,28,.95),rgba(12,16,28,.6) 60%,transparent);padding:50px 20px 32px}
+.title-block h1{font-family:'Playfair Display',serif;font-size:5.5em;font-weight:900;letter-spacing:12px;color:#e8edf8;text-shadow:0 0 40px rgba(140,170,220,.3)}
+.title-block h1 span{color:#e88a9a}
+.title-block p{color:rgba(160,180,210,.45);font-size:10px;letter-spacing:6px;text-transform:uppercase;margin-top:14px}
+.menu-right{width:320px;flex-shrink:0;background:rgba(22,28,40,.92);backdrop-filter:blur(20px);border-left:1px solid rgba(120,160,220,.1);display:flex;flex-direction:column;box-shadow:-4px 0 30px rgba(0,0,0,.3)}
+.menu-brand{padding:32px 28px 22px;border-bottom:1px solid rgba(120,160,220,.08)}
+.menu-brand .brand-name{color:rgba(122,173,255,.85);font-size:12px;letter-spacing:5px;font-weight:bold}
+.menu-brand .brand-sub{color:rgba(160,180,210,.3);font-size:9px;letter-spacing:3px;margin-top:5px}
+.menu-nav{flex:1;padding:22px 14px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.mbtn{background:rgba(30,38,55,.7);border:1px solid rgba(120,160,220,.08);border-left:3px solid transparent;border-radius:12px;color:rgba(180,195,220,.7);padding:16px 22px;font-family:'Inter',system-ui,sans-serif;font-size:14px;cursor:pointer;text-align:left;transition:all .25s;display:flex;align-items:center;gap:12px;letter-spacing:1px}
+.mbtn:hover{border-left-color:#7aadff;color:#e0e8f4;background:rgba(122,173,255,.08);transform:translateX(4px)}
+.mbtn.pri{border-left-color:rgba(122,173,255,.5);color:#c0d4ff;background:linear-gradient(135deg,rgba(122,173,255,.12),rgba(122,173,255,.04));font-weight:bold;font-size:15px;padding:18px 22px}
+.mbtn.ai-btn{border-left-color:rgba(0,200,170,.4);color:rgba(0,220,190,.8)}
+.mbtn.ai-btn:hover{border-left-color:#00dcc0;color:#fff;background:rgba(0,220,190,.08);transform:translateX(4px)}
+.mbtn.fam-btn{border-left-color:rgba(255,150,200,.4);color:rgba(255,170,210,.8)}
+.mbtn.fam-btn:hover{border-left-color:#ffb0d0;color:#fff;background:rgba(255,150,200,.08);transform:translateX(4px)}
+.mbtn.sett-btn-m{border-left-color:rgba(160,150,255,.3);color:rgba(160,150,255,.7)}
+.mbtn .ico{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.mdiv{height:1px;background:linear-gradient(90deg,transparent,rgba(120,160,220,.08),transparent);margin:6px 16px}
+.menu-foot{padding:18px 28px;border-top:1px solid rgba(120,160,220,.06)}
+.menu-foot p{color:rgba(160,180,210,.2);font-size:9px;letter-spacing:2px}
+
+/* STORY */
+#storyScreen{background:#000;align-items:center;justify-content:center;flex-direction:column}
+.story-box{position:relative;z-index:5;max-width:680px;width:90%;background:rgba(10,14,24,.92);border:1px solid rgba(122,173,255,.15);border-radius:8px;padding:36px 40px;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.story-chapter{color:rgba(122,173,255,.6);font-size:9px;letter-spacing:4px;margin-bottom:14px}
+.story-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:3px;margin-bottom:20px;line-height:1.3}
+.story-title span{color:#ff4444}
+.story-text{color:rgba(220,200,200,.82);font-size:12.5px;line-height:2;margin-bottom:22px}
+.story-goal{background:rgba(255,200,0,.07);border:1px solid rgba(255,200,0,.25);border-radius:3px;padding:14px 18px;margin-bottom:22px}
+.story-goal .goal-lbl{color:rgba(255,200,0,.6);font-size:8px;letter-spacing:3px;margin-bottom:6px}
+.story-goal .goal-val{color:#ffd700;font-size:20px;font-weight:900;letter-spacing:2px}
+.story-goal .goal-sub{color:rgba(255,200,0,.4);font-size:9px;margin-top:4px}
+.story-controls{display:flex;gap:10px;margin-top:4px}
+.story-btn{background:linear-gradient(135deg,rgba(122,173,255,.2),rgba(122,173,255,.1));border:1px solid rgba(122,173,255,.3);color:#c0d4ff;padding:11px 24px;font-family:'Inter',sans-serif;font-size:11px;font-weight:bold;cursor:pointer;border-radius:6px;letter-spacing:2px;transition:all .2s;flex:1}
+.story-btn:hover{background:linear-gradient(135deg,rgba(122,173,255,.3),rgba(122,173,255,.15));transform:translateY(-1px)}
+.story-btn.sec{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4)}
+.story-scroll{max-height:52vh;overflow-y:auto;padding-right:6px}
+.story-scroll::-webkit-scrollbar{width:3px}
+.story-scroll::-webkit-scrollbar-thumb{background:rgba(122,173,255,.2)}
+
+/* GAME */
+#gameScreen{align-items:center;justify-content:center;background:#000}
+#gameCanvas{display:block}
+.g-back{position:absolute;top:18px;right:18px;z-index:20;background:rgba(10,14,24,.9);border:1px solid rgba(122,173,255,.2);color:rgba(122,173,255,.8);padding:7px 15px;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:6px;transition:all .2s}
+.hud{position:absolute;top:18px;left:18px;width:260px}
+.hud-box{background:rgba(10,14,24,.92);border:1px solid rgba(122,173,255,.12);border-radius:6px;padding:14px;margin-bottom:6px}
+.hw{color:rgba(122,173,255,.7);font-size:9px;letter-spacing:3px;margin-bottom:11px;border-bottom:1px solid rgba(122,173,255,.1);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.money-hud{background:rgba(10,14,24,.92);border:1px solid rgba(255,200,0,.2);border-radius:6px;padding:12px 14px;margin-bottom:6px}
+.money-lbl{color:rgba(255,200,0,.5);font-size:8px;letter-spacing:3px}
+.money-val{color:#ffd700;font-size:20px;font-weight:900}
+.money-goal{color:rgba(255,200,0,.35);font-size:8px;margin-top:2px}
+.money-prog{height:4px;background:#1a1400;border-radius:2px;margin-top:7px;overflow:hidden}
+.money-fill{height:100%;background:linear-gradient(90deg,#b8860b,#ffd700);border-radius:2px;transition:width .5s}
+.hs{margin:8px 0}.hl{color:rgba(160,180,210,.6);font-size:8px;letter-spacing:2px;margin-bottom:3px}
+.bw{height:5px;background:#080810;border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px;transition:width .5s}
+.be{background:linear-gradient(90deg,#00b4d8,#0077b6)}
+.bs{background:linear-gradient(90deg,#e63946,#c1121f)}
+.bv{float:right;font-size:8px;color:rgba(180,195,220,.6);margin-top:-10px}
+.hi{margin-top:9px;padding-top:8px;border-top:1px solid rgba(122,173,255,.08)}
+.hi p{font-size:9px;color:rgba(160,180,210,.5);margin:3px 0}
+.hi span{color:rgba(200,210,230,.7)}
+.hwarn{background:rgba(255,60,60,.12);border:1px solid rgba(255,60,60,.45);border-radius:2px;padding:7px 10px;font-size:9px;color:#ff5050;letter-spacing:1px;display:none;animation:wp 1s infinite;margin-top:4px}
+.hwarn.on{display:block}
+@keyframes wp{0%,100%{opacity:1}50%{opacity:.7}}
+.itip{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.92);border:1px solid #ffd700;color:#ffd700;padding:12px 24px;font-size:14px;border-radius:4px;display:none;letter-spacing:1.5px;white-space:nowrap;font-weight:bold}
+.itip.on{display:block;animation:tf 1.8s infinite}
+@keyframes tf{0%,100%{opacity:1}50%{opacity:.65}}
+.chint{position:absolute;bottom:14px;right:14px;font-size:8px;color:#1a1a2a;letter-spacing:1px}
+.vig{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s}
+.vig.vh{background:radial-gradient(ellipse,transparent 18%,rgba(120,0,0,.65) 100%);opacity:1}
+.vig.vc{background:radial-gradient(ellipse,transparent 8%,rgba(160,0,0,.88) 100%);opacity:1;animation:cs .4s infinite}
+@keyframes cs{0%,100%{transform:none}33%{transform:translate(-3px,1px)}66%{transform:translate(3px,-1px)}}
+.money-pop{position:absolute;font-weight:900;font-size:18px;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,.8);pointer-events:none;animation:moneyPop 1.2s ease-out forwards}
+@keyframes moneyPop{0%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(-55px) scale(.9)}}
+.dmg-pop{position:absolute;font-weight:900;font-size:16px;color:#ff4444;text-shadow:0 0 12px rgba(255,0,0,.8);pointer-events:none;animation:moneyPop 1.2s ease-out forwards}
+.event-overlay{position:absolute;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(6px)}
+.event-overlay.on{display:flex}
+.event-box{max-width:560px;width:92%;background:linear-gradient(145deg,#0a0005,#060012);border:2px solid rgba(255,40,40,.55);border-radius:4px;padding:30px 34px;animation:evIn .6s ease}
+@keyframes evIn{0%{transform:scale(.88) translateY(-30px);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+.ev-chapter{color:rgba(255,80,80,.6);font-size:8px;letter-spacing:4px;margin-bottom:10px}
+.ev-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:16px;line-height:1.3}
+.ev-text{color:rgba(220,200,200,.82);font-size:12px;line-height:2;margin-bottom:18px;white-space:pre-line}
+.ev-impact{background:rgba(255,30,30,.12);border:1px solid rgba(255,60,60,.5);border-radius:3px;padding:14px 18px;margin-bottom:20px;text-align:center}
+.ev-impact .ei-lbl{color:rgba(255,100,100,.6);font-size:8px;letter-spacing:3px;margin-bottom:5px}
+.ev-impact .ei-val{color:#ff4444;font-size:24px;font-weight:900}
+.ev-impact .ei-new{color:rgba(255,200,0,.75);font-size:10px;margin-top:5px}
+.ev-confirm{width:100%;padding:13px;background:linear-gradient(135deg,#7a0000,#e63946);border:none;color:#fff;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;cursor:pointer;border-radius:2px;letter-spacing:2px;transition:all .2s}
+
+/* MODAL */
+.movl{position:absolute;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(3px)}
+.movl.on{display:flex}
+.mbox{background:linear-gradient(155deg,#070710,#0e0616);border:1px solid #241424;border-radius:3px;padding:26px;max-width:600px;width:90%;max-height:88vh;overflow-y:auto;animation:ms .2s ease}
+@keyframes ms{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mbox h2{color:#ff4444;margin-bottom:13px;font-size:22px;border-bottom:1px solid #241424;padding-bottom:9px;font-weight:bold}
+.mbox p{color:#b0b0c0;margin:8px 0;line-height:1.75;font-size:13px}
+.cg{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.cb{background:#080812;border:1px solid #222240;color:#b0b0c0;padding:12px 16px;font-family:'Courier New',monospace;font-size:13px;cursor:pointer;transition:all .2s;flex:1;min-width:160px;border-radius:4px;line-height:1.5;font-weight:bold}
+.cb:hover{border-color:#ffd700;background:rgba(255,215,0,.06);color:#fff;transform:translateY(-2px)}
+.cb .cb-tag{display:block;font-size:10px;margin-top:5px;letter-spacing:1px;font-weight:normal}
+.cb .cb-good{color:#4ecdc4}.cb .cb-bad{color:#e63946}.cb .cb-cost{color:#ff8800}
+.bok{background:#e63946;border:none;color:#fff;padding:10px 22px;font-family:'Courier New',monospace;font-size:13px;font-weight:bold;cursor:pointer;border-radius:4px;margin-top:10px;letter-spacing:1.5px;transition:all .2s}
+.bok:hover{background:#c1121f;transform:translateY(-2px)}
+.bok.gold{background:linear-gradient(135deg,#b8860b,#ffd700);color:#000}
+.bok.teal{background:linear-gradient(135deg,#007a6a,#00d4b4);color:#000}
+.bok.pink{background:linear-gradient(135deg,#7a3060,#ff80b0);color:#fff}
+.ibox{background:rgba(0,212,180,.05);border-left:2px solid #00d4b4;padding:9px 12px;margin:8px 0;border-radius:1px;font-size:11px;color:#7aa09a}
+.wbox{background:rgba(230,57,70,.07);border-left:2px solid #e63946;padding:9px 12px;margin:8px 0;border-radius:1px;font-size:11px;color:#b07070}
+.gbox{background:rgba(255,215,0,.05);border-left:2px solid #ffd700;padding:9px 12px;margin:8px 0;border-radius:1px;font-size:11px;color:#c8a800}
+.pbox{background:rgba(255,150,200,.05);border-left:2px solid #ff90c0;padding:9px 12px;margin:8px 0;border-radius:1px;font-size:11px;color:#c07090}
+.mbox::-webkit-scrollbar{width:4px}.mbox::-webkit-scrollbar-thumb{background:rgba(122,173,255,.2)}
+
+/* SETTINGS */
+#settingsScreen{background:#000;align-items:center;justify-content:center}
+.sett-panel{background:rgba(4,4,14,.98);border:1px solid rgba(140,120,255,.2);border-radius:4px;padding:36px 44px;width:560px;max-width:94vw;animation:fadeIn .4s ease}
+.sett-h{color:#9090ff;font-size:17px;font-weight:900;letter-spacing:4px;margin-bottom:5px}
+.sett-sub{color:rgba(255,255,255,.2);font-size:9px;letter-spacing:3px;margin-bottom:26px;padding-bottom:14px;border-bottom:1px solid rgba(140,120,255,.1)}
+.sett-sec{margin-bottom:20px}.sett-sec-t{color:rgba(140,120,255,.5);font-size:8px;letter-spacing:3px;margin-bottom:12px}
+.sett-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sett-lbl{color:rgba(200,180,200,.7);font-size:11px;letter-spacing:1px}
+.sett-rv{display:flex;align-items:center;gap:10px}
+.sett-val{color:#ffd700;font-size:11px;width:30px;text-align:right}
+input[type=range]{-webkit-appearance:none;width:130px;height:3px;background:#1a1a2a;border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#9090ff;cursor:pointer}
+.diff-grp{display:flex;gap:8px}
+.diff-btn{background:#080812;border:1px solid #222;color:rgba(200,180,200,.5);padding:8px 14px;font-family:'Courier New',monospace;font-size:10px;cursor:pointer;border-radius:2px;transition:all .2s;letter-spacing:1px}
+.diff-btn.active{border-color:#9090ff;color:#b0b0ff;background:rgba(140,120,255,.08)}
+.tog-wrap{position:relative;width:40px;height:20px;cursor:pointer;display:inline-block}
+.tog-wrap input{opacity:0;width:0;height:0;position:absolute}
+.tog-sl{position:absolute;inset:0;background:#1a1a2a;border-radius:10px;transition:.3s}
+.tog-sl:before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:#444;border-radius:50%;transition:.3s}
+.tog-wrap input:checked+.tog-sl{background:rgba(140,120,255,.3)}
+.tog-wrap input:checked+.tog-sl:before{transform:translateX(20px);background:#9090ff}
+.key-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.key-row{display:flex;align-items:center;gap:8px}
+.key-kbd{background:#0a0a1a;border:1px solid #2a2a4a;color:#6a6a9a;font-size:9px;padding:3px 7px;border-radius:2px;font-family:'Courier New',monospace}
+.key-lbl{color:rgba(180,160,200,.5);font-size:9px}
+.sett-acts{display:flex;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid rgba(140,120,255,.1)}
+.sa-btn{flex:1;padding:11px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;border-radius:2px;letter-spacing:2px;transition:all .2s;border:none}
+.sa-btn.pri{background:#9090ff;color:#000}
+.sa-btn.sec{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.35)}
+
+/* AI SCREEN */
+#aiScreen{background:#000;align-items:stretch;flex-direction:row}
+.ai-left{width:280px;flex-shrink:0;background:rgba(0,5,12,.98);border-right:1px solid rgba(0,212,180,.15);display:flex;flex-direction:column;overflow:hidden}
+.ai-field input.invalid,.ai-field select.invalid{border-color:#ff4444!important}
+.field-error{color:#ff5555;font-size:9px;letter-spacing:1px;margin-top:3px;display:none}
+.field-error.show{display:block}
+.field-ok{color:#00d4b4;font-size:9px;letter-spacing:1px;margin-top:3px;display:none}
+.field-ok.show{display:block}
+.ai-resize-handle{width:5px;flex-shrink:0;background:rgba(0,212,180,.06);cursor:col-resize;display:flex;align-items:center;justify-content:center;transition:background .2s;user-select:none}
+.ai-resize-handle:hover,.ai-resize-handle.dragging{background:rgba(0,212,180,.25)}
+.ai-resize-handle::after{content:'';display:block;width:2px;height:40px;background:rgba(0,212,180,.4);border-radius:2px}
+.ai-header{padding:14px 14px 10px;border-bottom:1px solid rgba(0,212,180,.1)}
+.ai-header .ai-tag{color:rgba(0,212,180,.5);font-size:8px;letter-spacing:4px;margin-bottom:4px}
+.ai-header h2{color:#00d4b4;font-size:13px;letter-spacing:2px;font-weight:900}
+.ai-header p{color:rgba(255,255,255,.2);font-size:9px;margin-top:3px;line-height:1.5}
+.ai-form-area{flex:1;overflow-y:auto;padding:10px}
+.ai-form-area::-webkit-scrollbar{width:3px}
+.ai-form-area::-webkit-scrollbar-thumb{background:rgba(0,212,180,.2)}
+.ai-section{margin-bottom:12px}
+.ai-section-title{color:rgba(0,212,180,.45);font-size:8px;letter-spacing:3px;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid rgba(0,212,180,.07)}
+.ai-field{margin-bottom:7px}
+.ai-field label{display:block;color:rgba(255,255,255,.35);font-size:9px;letter-spacing:1px;margin-bottom:3px}
+.ai-field input,.ai-field select,.ai-field textarea{width:100%;background:#020a0e;border:1px solid rgba(0,212,180,.15);color:#c0e0d8;font-family:'Courier New',monospace;font-size:11px;padding:5px 7px;border-radius:2px;outline:none;transition:border-color .2s}
+.ai-field input:focus,.ai-field select:focus,.ai-field textarea:focus{border-color:rgba(0,212,180,.5)}
+.ai-field textarea{resize:none;height:48px;line-height:1.5}
+.ai-field select option{background:#020a0e}
+.ai-check-group{display:flex;flex-wrap:wrap;gap:4px}
+.ai-check{background:#020a0e;border:1px solid rgba(0,212,180,.12);color:rgba(200,220,215,.5);padding:3px 7px;font-family:'Courier New',monospace;font-size:9px;cursor:pointer;border-radius:2px;transition:all .2s;letter-spacing:1px}
+.ai-check.on{border-color:#00d4b4;color:#00d4b4;background:rgba(0,212,180,.07)}
+.ai-footer{padding:8px 14px;border-top:1px solid rgba(0,212,180,.1)}
+.ai-submit{width:100%;background:linear-gradient(135deg,#004a42,#00d4b4);border:none;color:#000;padding:9px;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;cursor:pointer;border-radius:2px;letter-spacing:2px;transition:all .2s}
+.ai-submit:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.ai-submit:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ai-disclaimer{color:rgba(255,255,255,.1);font-size:8px;text-align:center;padding:6px;border-top:1px solid rgba(0,212,180,.05)}
+
+/* MIDDLE */
+.ai-middle{width:200px;flex-shrink:0;background:rgba(0,3,10,.97);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.ai-middle-top{width:100%;padding:12px 12px 7px;border-bottom:1px solid rgba(0,212,180,.08);display:flex;align-items:center;justify-content:space-between}
+.ai-middle-top h3{color:rgba(0,212,180,.6);font-size:9px;letter-spacing:3px}
+.ai-status-dot{width:7px;height:7px;border-radius:50%;background:#1a3a34;display:inline-block;animation:pulse 2s infinite;margin-right:5px}
+.ai-status-dot.active{background:#00d4b4}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ai-middle-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 8px;gap:8px;overflow-y:auto;width:100%}
+.ai-middle-body::-webkit-scrollbar{width:2px}
+.ai-mini-cards{width:100%;display:flex;flex-direction:column;gap:5px}
+.ai-mini-card{background:rgba(0,10,18,.9);border:1px solid rgba(0,212,180,.12);border-radius:3px;padding:7px 9px}
+.ai-mini-card.danger{border-color:rgba(255,60,60,.4);background:rgba(20,0,0,.9)}
+.ai-mini-card.good{border-color:rgba(0,212,180,.4)}
+.ai-mini-card .mc-lbl{color:rgba(255,255,255,.25);font-size:7px;letter-spacing:2px;margin-bottom:3px}
+.ai-mini-card .mc-val{font-size:18px;font-weight:900;line-height:1}
+.ai-mini-card .mc-unit{font-size:8px;color:rgba(255,255,255,.3);margin-top:2px}
+.ai-risk-bar-wrap{width:100%}
+.ai-risk-bar-wrap .rlbl{display:flex;justify-content:space-between;margin-bottom:4px;font-size:8px;color:rgba(255,255,255,.25);letter-spacing:1px}
+.ai-risk-bar{height:5px;background:#050f14;border-radius:4px;overflow:hidden;border:1px solid rgba(0,212,180,.08)}
+.ai-risk-fill{height:100%;border-radius:4px;transition:width 1.5s ease}
+.ai-idle-middle{color:rgba(0,212,180,.15);font-size:10px;letter-spacing:2px;text-align:center;margin-top:30px;line-height:1.8}
+.ai-loading{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:20px}
+.ai-loading p{color:rgba(0,212,180,.5);font-size:9px;letter-spacing:3px;animation:pulse 1s infinite}
+.scan-line-anim{width:140px;height:2px;background:linear-gradient(90deg,transparent,#00d4b4,transparent);animation:scan 1.5s linear infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+#bodyCanvas{border:1px solid rgba(0,212,180,.1);border-radius:4px;background:rgba(0,5,12,.8)}
+.body-scan-label{color:rgba(0,212,180,.4);font-size:8px;letter-spacing:3px;margin-top:5px;text-align:center}
+
+/* RIGHT CHAT */
+.ai-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:rgba(0,2,8,.97)}
+.ai-right-top{padding:12px 16px;border-bottom:1px solid rgba(0,212,180,.08);display:flex;align-items:center;justify-content:space-between}
+.ai-right-top h3{color:rgba(0,212,180,.7);font-size:11px;letter-spacing:3px}
+.ai-timestamp{color:rgba(0,212,180,.3);font-size:9px;letter-spacing:2px}
+.ai-chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ai-chat-msgs::-webkit-scrollbar{width:3px}
+.ai-chat-msgs::-webkit-scrollbar-thumb{background:rgba(0,212,180,.15)}
+.chat-bubble{max-width:88%;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.75;animation:fadeIn .3s ease}
+.chat-bubble.bot{background:rgba(0,20,18,.9);border:1px solid rgba(0,212,180,.2);color:#c0e0d8;border-bottom-left-radius:3px;align-self:flex-start}
+.chat-bubble.bot .bot-label{color:rgba(0,212,180,.5);font-size:8px;letter-spacing:2px;margin-bottom:5px;display:block}
+.chat-bubble.user{background:rgba(30,50,80,.7);border:1px solid rgba(122,173,255,.2);color:#c8d8f0;border-bottom-right-radius:3px;align-self:flex-end}
+.chat-bubble.user .user-label{color:rgba(122,173,255,.5);font-size:8px;letter-spacing:2px;margin-bottom:5px;display:block;text-align:right}
+.chat-bubble.system{background:rgba(20,10,0,.8);border:1px solid rgba(255,200,0,.2);color:#f0d080;border-radius:8px;align-self:center;text-align:center;font-size:11px;max-width:96%}
+.chat-bubble .highlight{color:#00d4b4;font-weight:bold}
+.chat-bubble .danger-text{color:#ff5555;font-weight:bold}
+.chat-bubble .warn-text{color:#ffd700;font-weight:bold}
+.chat-section-tag{display:inline-block;background:rgba(0,212,180,.1);border:1px solid rgba(0,212,180,.3);color:#00d4b4;font-size:8px;letter-spacing:2px;padding:2px 8px;border-radius:10px;margin-bottom:7px}
+.chat-list{margin:5px 0;padding-left:14px}
+.chat-list li{margin:3px 0;font-size:11px}
+.chat-list li.bad{color:#ff7777}.chat-list li.good{color:#4ecdc4}.chat-list li.warn{color:#ffd700}
+.chat-typing{display:flex;gap:5px;align-items:center;padding:8px 12px}
+.chat-typing span{width:7px;height:7px;border-radius:50%;background:rgba(0,212,180,.5);animation:dotBounce .9s infinite}
+.chat-typing span:nth-child(2){animation-delay:.15s}
+.chat-typing span:nth-child(3){animation-delay:.3s}
+@keyframes dotBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+.ai-chat-input-row{padding:10px 14px;border-top:1px solid rgba(0,212,180,.08);display:flex;gap:8px;align-items:flex-end}
+.ai-chat-input{flex:1;background:rgba(0,10,18,.9);border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-family:'Inter',sans-serif;font-size:12px;padding:8px 12px;border-radius:10px;outline:none;resize:none;max-height:90px;line-height:1.6;transition:border-color .2s}
+.ai-chat-input:focus{border-color:rgba(0,212,180,.5)}
+.ai-chat-input::placeholder{color:rgba(0,212,180,.25)}
+.ai-chat-send{background:linear-gradient(135deg,#004a42,#00d4b4);border:none;color:#000;width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.ai-chat-send:disabled{opacity:.3;cursor:not-allowed}
+.quick-btns{padding:7px 14px;display:flex;flex-wrap:wrap;gap:5px;border-top:1px solid rgba(0,212,180,.05)}
+.qbtn{background:rgba(0,20,18,.8);border:1px solid rgba(0,212,180,.18);color:rgba(0,212,180,.7);font-size:10px;padding:4px 11px;border-radius:20px;cursor:pointer;transition:all .2s;letter-spacing:.5px;font-family:'Inter',sans-serif}
+.qbtn:hover{background:rgba(0,212,180,.12);color:#00d4b4;border-color:rgba(0,212,180,.5)}
+.back-from-ai{position:absolute;top:14px;right:14px;z-index:20;background:rgba(0,0,0,.85);border:1px solid rgba(0,212,180,.3);color:rgba(0,212,180,.7);padding:7px 15px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:2px;transition:all .2s}
+#camArea{background:rgba(0,10,20,.6);border:1px solid rgba(0,212,180,.15);border-radius:8px;padding:8px;text-align:center;margin-top:5px}
+
+/* ═══ FAMILY SCREEN ═══ */
+#familyScreen{background:linear-gradient(135deg,#0d0818,#12081e,#0d1222);align-items:stretch;flex-direction:column;overflow:hidden}
+.fam-header{padding:18px 28px 14px;border-bottom:1px solid rgba(255,150,200,.12);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.fam-header-left h1{font-size:20px;font-weight:900;letter-spacing:4px;color:#ffb0d8}
+.fam-header-left p{color:rgba(255,150,200,.4);font-size:9px;letter-spacing:3px;margin-top:3px}
+.fam-back{background:transparent;border:1px solid rgba(255,150,200,.25);color:rgba(255,150,200,.6);padding:7px 16px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all .2s}
+.fam-back:hover{border-color:#ffb0d8;color:#ffb0d8}
+.fam-body{flex:1;display:flex;overflow:hidden;gap:0}
+/* LEFT: member list */
+.fam-left{width:260px;flex-shrink:0;border-right:1px solid rgba(255,150,200,.1);display:flex;flex-direction:column;overflow:hidden}
+.fam-left-top{padding:14px 14px 10px;border-bottom:1px solid rgba(255,150,200,.08);display:flex;align-items:center;justify-content:space-between}
+.fam-left-top h3{color:rgba(255,150,200,.7);font-size:10px;letter-spacing:3px}
+.fam-add-btn{background:rgba(255,150,200,.12);border:1px solid rgba(255,150,200,.3);color:#ffb0d8;padding:5px 10px;font-size:10px;cursor:pointer;border-radius:4px;transition:all .2s}
+.fam-add-btn:hover{background:rgba(255,150,200,.22);transform:scale(1.05)}
+.fam-member-list{flex:1;overflow-y:auto;padding:10px}
+.fam-member-list::-webkit-scrollbar{width:3px}
+.fam-member-list::-webkit-scrollbar-thumb{background:rgba(255,150,200,.15)}
+.fam-member-card{background:rgba(20,8,28,.8);border:1px solid rgba(255,150,200,.12);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .25s;position:relative}
+.fam-member-card:hover,.fam-member-card.active{border-color:rgba(255,150,200,.45);background:rgba(255,150,200,.07);transform:translateX(3px)}
+.fam-member-card .fm-name{font-size:14px;font-weight:bold;color:#ffb0d8;margin-bottom:3px}
+.fam-member-card .fm-rel{font-size:9px;color:rgba(255,150,200,.4);letter-spacing:2px}
+.fam-member-card .fm-next{font-size:9px;color:rgba(255,200,100,.6);margin-top:5px}
+.fam-member-card .fm-badge{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:#ff4444;animation:pulse 1.5s infinite}
+.fam-member-card .fm-badge.ok{background:#00d4b4;animation:none}
+/* CENTER: detail */
+.fam-center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.fam-center-top{padding:14px 18px 10px;border-bottom:1px solid rgba(255,150,200,.08);display:flex;align-items:center;gap:14px}
+.fam-avatar{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,150,200,.3);background:rgba(255,150,200,.1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fam-avatar.age-child{border-color:rgba(100,200,255,.4);background:rgba(100,200,255,.08)}
+.fam-avatar.age-elder{border-color:rgba(255,200,100,.4);background:rgba(255,200,100,.08)}
+.fam-info h2{color:#ffb0d8;font-size:16px;font-weight:900;letter-spacing:2px}
+.fam-info p{color:rgba(255,150,200,.4);font-size:9px;letter-spacing:2px;margin-top:2px}
+.fam-center-scroll{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.fam-center-scroll::-webkit-scrollbar{width:3px}
+.fam-center-scroll::-webkit-scrollbar-thumb{background:rgba(255,150,200,.15)}
+/* Reminders */
+.fam-section-label{color:rgba(255,150,200,.5);font-size:8px;letter-spacing:3px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,150,200,.08)}
+.reminder-card{background:rgba(20,8,28,.9);border:1px solid rgba(255,150,200,.15);border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;position:relative}
+.reminder-card.urgent{border-color:rgba(255,80,80,.5);background:rgba(30,5,5,.9)}
+.reminder-card.done{opacity:.5}
+.reminder-card .rc-icon{font-size:22px;flex-shrink:0}
+.reminder-card .rc-body{flex:1}
+.reminder-card .rc-title{font-size:13px;font-weight:bold;color:#fff;margin-bottom:3px}
+.reminder-card .rc-time{font-size:10px;color:rgba(255,200,100,.7);margin-bottom:5px}
+.reminder-card .rc-note{font-size:10px;color:rgba(200,180,200,.5);line-height:1.5}
+.reminder-card .rc-send{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#5a1a40,#ff80b0);border:none;color:#fff;padding:5px 10px;font-size:9px;font-family:'Courier New',monospace;cursor:pointer;border-radius:4px;letter-spacing:1px;transition:all .2s}
+.reminder-card .rc-send:hover{filter:brightness(1.2);transform:scale(1.05)}
+.reminder-card .rc-done{position:absolute;top:10px;right:10px;background:rgba(0,212,180,.12);border:1px solid rgba(0,212,180,.3);color:#00d4b4;padding:5px 10px;font-size:9px;font-family:'Courier New',monospace;cursor:pointer;border-radius:4px;letter-spacing:1px}
+/* Add reminder form */
+.fam-add-reminder{background:rgba(10,5,20,.95);border:1px solid rgba(255,150,200,.2);border-radius:8px;padding:14px;display:none}
+.fam-add-reminder.show{display:block}
+.fam-inp{width:100%;background:#0a0614;border:1px solid rgba(255,150,200,.18);color:#e0c0d8;font-family:'Courier New',monospace;font-size:11px;padding:7px 10px;border-radius:4px;outline:none;margin-bottom:7px;transition:border-color .2s}
+.fam-inp:focus{border-color:rgba(255,150,200,.5)}
+.fam-inp-row{display:flex;gap:7px;margin-bottom:7px}
+.fam-inp-row .fam-inp{margin-bottom:0}
+.fam-inp-label{color:rgba(255,150,200,.35);font-size:9px;letter-spacing:1px;margin-bottom:4px;display:block}
+.fam-save-btn{background:linear-gradient(135deg,#5a1a40,#ff80b0);border:none;color:#fff;padding:8px 18px;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;cursor:pointer;border-radius:4px;letter-spacing:2px;transition:all .2s}
+.fam-save-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+/* RIGHT: message preview */
+.fam-right{width:280px;flex-shrink:0;border-left:1px solid rgba(255,150,200,.1);display:flex;flex-direction:column;overflow:hidden}
+.fam-right-top{padding:12px 14px;border-bottom:1px solid rgba(255,150,200,.08)}
+.fam-right-top h3{color:rgba(255,150,200,.6);font-size:10px;letter-spacing:3px}
+.fam-msg-preview{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.fam-msg-preview::-webkit-scrollbar{width:3px}
+.msg-bubble-out{background:linear-gradient(135deg,rgba(90,26,64,.8),rgba(255,128,176,.1));border:1px solid rgba(255,150,200,.2);border-radius:12px 12px 3px 12px;padding:10px 13px;font-size:12px;color:#ffe0f0;line-height:1.6;align-self:flex-end;max-width:90%}
+.msg-bubble-in{background:rgba(20,10,30,.9);border:1px solid rgba(255,150,200,.1);border-radius:12px 12px 12px 3px;padding:10px 13px;font-size:12px;color:rgba(200,180,210,.7);line-height:1.6;align-self:flex-start;max-width:90%}
+.msg-meta{font-size:9px;color:rgba(255,150,200,.3);letter-spacing:1px;margin-bottom:4px}
+.fam-quick-msgs{padding:10px 12px;border-top:1px solid rgba(255,150,200,.08)}
+.fam-quick-msgs p{color:rgba(255,150,200,.4);font-size:8px;letter-spacing:2px;margin-bottom:7px}
+.fam-quick-msg-btn{width:100%;background:rgba(255,150,200,.07);border:1px solid rgba(255,150,200,.15);color:rgba(255,180,210,.7);padding:7px 12px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;border-radius:6px;margin-bottom:5px;text-align:left;transition:all .2s;line-height:1.4}
+.fam-quick-msg-btn:hover{background:rgba(255,150,200,.15);color:#ffb0d8;border-color:rgba(255,150,200,.4);transform:translateX(2px)}
+.fam-quick-msg-btn span{display:block;font-size:9px;color:rgba(255,150,200,.35);margin-top:2px}
+/* Toast notification */
+.toast{position:fixed;bottom:30px;right:30px;background:rgba(0,30,24,.97);border:1px solid #00d4b4;border-radius:8px;padding:12px 18px;color:#00d4b4;font-size:12px;font-family:'Courier New',monospace;letter-spacing:1px;z-index:9999;animation:toastIn .3s ease;pointer-events:none;max-width:280px}
+.toast.pink{border-color:#ff80b0;color:#ff80b0;background:rgba(30,5,20,.97)}
+.toast.red{border-color:#ff4444;color:#ff4444;background:rgba(30,0,0,.97)}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* Urgent reminder overlay for game */
+.game-reminder{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(80,0,40,.95);border:1px solid rgba(255,120,180,.5);border-radius:8px;padding:8px 18px;color:#ffb0d8;font-size:11px;letter-spacing:1px;z-index:50;animation:tf 2s infinite;cursor:pointer;max-width:380px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div id="mainMenu" class="screen active">
+<canvas id="bgCanvas"></canvas>
+<div class="menu-layout">
+  <div class="menu-left">
+    <canvas id="sceneCanvas"></canvas>
+    <div class="title-block">
+      <h1>IF <span>YOU</span> FALL</h1>
+      <p>a story about the price of ambition</p>
+    </div>
+  </div>
+  <div class="menu-right">
+    <div class="menu-brand">
+      <div class="brand-name">IF YOU FALL</div>
+      <div class="brand-sub">STORY EXPERIENCE · 2026</div>
+    </div>
+    <div class="menu-nav">
+      <button class="mbtn pri" onclick="openStory()"><span class="ico">▶</span>NEW GAME</button>
+      <button class="mbtn" onclick="continueGame()"><span class="ico">⏵</span>CONTINUE</button>
+      <div class="mdiv"></div>
+      <button class="mbtn ai-btn" onclick="openAI()"><span class="ico">🧬</span>AI Đoán Tuổi Thọ</button>
+      <button class="mbtn fam-btn" onclick="openFamily()"><span class="ico">💌</span>Kết Nối Gia Đình</button>
+      <div class="mdiv"></div>
+      <button class="mbtn sett-btn-m" onclick="openSettings()"><span class="ico">⚙</span>CÀI ĐẶT</button>
+      <button class="mbtn" onclick="showHighscore()"><span class="ico">🏆</span>BEST RUNS</button>
+    </div>
+    <div class="menu-foot"><p>v9.0 · FAMILY CONNECT + AI HEALTH</p></div>
+  </div>
+</div>
+</div>
+
+<!-- STORY -->
+<div id="storyScreen" class="screen">
+<canvas id="storyBg" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+<div class="story-box">
+  <div class="story-scroll" id="storyScroll"></div>
+  <div class="story-controls" id="storyControls"></div>
+</div>
+</div>
+
+<!-- GAME -->
+<div id="gameScreen" class="screen">
+<canvas id="gameCanvas" width="1000" height="620"></canvas>
+<button class="g-back" onclick="backToMenu()">← MENU</button>
+<div class="hud">
+  <div class="money-hud">
+    <div class="money-lbl">💰 TIỀN TÍCH LŨY</div>
+    <div class="money-val" id="moneyV">0đ</div>
+    <div class="money-goal" id="moneyGoal">Mục tiêu: 50,000,000đ</div>
+    <div class="money-prog"><div class="money-fill" id="moneyFill" style="width:0%"></div></div>
+  </div>
+  <div class="hud-box">
+    <div class="hw"><span>NGÀY <span id="dayNum">1</span> · <span id="hourDisp" style="color:#ffd700">06:00</span></span><span style="color:rgba(255,200,0,.5);font-size:8px">LV <span id="lvlNum">1</span> · <span id="diffLbl">BÌNH THƯỜNG</span></span></div>
+    <div class="hs"><div class="hl">⚡ NĂNG LƯỢNG</div><div class="bv" id="enV">100%</div><div class="bw"><div class="bf" id="enB" style="width:100%;background:linear-gradient(90deg,#ffd700,#ff8800)"></div></div></div>
+    <div class="hs"><div class="hl">❤️ SỨC KHỎE</div><div class="bv" id="hpV">100%</div><div class="bw"><div class="bf be" id="hpB" style="width:100%"></div></div></div>
+    <div class="hs"><div class="hl">😴 MỆT MỎI</div><div class="bv" id="faV">0%</div><div class="bw"><div class="bf bs" id="faB" style="width:0%"></div></div></div>
+    <div class="hi">
+      <p>Ngủ hôm qua: <span id="slH">—</span></p>
+      <p>Cà phê hôm nay: <span id="cfH">0 ly</span></p>
+      <p>Trạng thái: <span id="emH" style="font-size:12px;margin-right:4px">😊</span><span id="rkH" style="color:#4ecdc4">BÌNH THƯỜNG</span></p>
+    </div>
+  </div>
+  <div class="hwarn" id="hwarn">⚠ NGUY HIỂM — QUÁ MỆT MỎI!</div>
+</div>
+<div class="itip" id="itip">[ E ] TƯƠNG TÁC</div>
+<div id="gameReminder" class="game-reminder" style="display:none" onclick="this.style.display='none'"></div>
+<div class="chint">WASD · E: Tương tác · ESC: Menu</div>
+<div class="vig" id="vig"></div>
+<div class="event-overlay" id="evOverlay">
+  <div class="event-box">
+    <div class="ev-chapter" id="evChapter"></div>
+    <div class="ev-title" id="evTitle"></div>
+    <div class="ev-text" id="evText"></div>
+    <div class="ev-impact"><div class="ei-lbl">PHÁT SINH CHI PHÍ</div><div class="ei-val" id="evVal"></div><div class="ei-new" id="evNew"></div></div>
+    <button class="ev-confirm" onclick="closeEvent()">TÔI HIỂU — TIẾP TỤC →</button>
+  </div>
+</div>
+</div>
+
+<!-- AI SCREEN -->
+<div id="aiScreen" class="screen">
+<button class="back-from-ai" onclick="backToMenu()">← MENU</button>
+<div class="ai-left">
+  <div class="ai-header">
+    <div class="ai-tag">HEALTH MONITOR AI · v3.0</div>
+    <h2>NHẬP THÔNG TIN</h2>
+    <p>Điền để AI phân tích sức khoẻ.</p>
+  </div>
+  <div class="ai-form-area">
+    <div class="ai-section">
+      <div class="ai-section-title">THÔNG TIN CƠ BẢN</div>
+      <div class="ai-field"><label>TUỔI</label><input type="number" id="ai_age" value="30" oninput="validateField(this,'age')" onblur="validateField(this,'age')"><div class="field-error" id="err_age">⚠ Tuổi phải từ 1 đến 120!</div><div class="field-ok" id="ok_age">✓ Hợp lệ</div></div>
+      <div class="ai-field"><label>GIỚI TÍNH</label><select id="ai_gender"><option value="male">Nam</option><option value="female">Nữ</option></select></div>
+      <div class="ai-field"><label>BMI (kg/m²)</label><input type="number" id="ai_bmi" value="22" step="0.1" oninput="validateField(this,'bmi')" onblur="validateField(this,'bmi')"><div class="field-error" id="err_bmi">⚠ BMI từ 10 đến 80!</div><div class="field-ok" id="ok_bmi">✓ Hợp lệ</div></div>
+      <div class="ai-field"><label style="color:rgba(0,212,180,.6)">📸 CAMERA (tuỳ chọn)</label><div id="camArea"><div id="camPreview" style="display:none"><video id="camVideo" autoplay playsinline style="width:100%;max-width:180px;border-radius:6px;border:2px solid rgba(0,212,180,.3)"></video><br><button onclick="capturePhoto()" style="margin-top:4px;padding:4px 10px;background:linear-gradient(135deg,#00d4b4,#00a896);color:#000;border:none;border-radius:5px;font-weight:bold;cursor:pointer;font-size:10px">📸 CHỤP</button><button onclick="stopCam()" style="margin-left:4px;padding:4px 9px;background:#333;color:#aaa;border:1px solid #555;border-radius:5px;font-size:10px;cursor:pointer">✕</button></div><div id="camCaptured" style="display:none"><img id="camPhoto" style="width:100%;max-width:130px;border-radius:5px;border:2px solid rgba(0,212,180,.4)"><div style="color:rgba(0,212,180,.7);font-size:8px;margin-top:3px">✅ Đã chụp</div><button onclick="startCam()" style="margin-top:3px;padding:3px 8px;background:#222;color:#aaa;border:1px solid #444;border-radius:5px;font-size:9px;cursor:pointer">🔄 Chụp lại</button></div><button id="camStartBtn" onclick="startCam()" style="padding:5px 14px;background:rgba(0,212,180,.1);color:rgba(0,212,180,.8);border:1px solid rgba(0,212,180,.3);border-radius:5px;cursor:pointer;font-size:10px;font-weight:bold">📷 Mở Camera</button></div></div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">GIẤC NGỦ</div>
+      <div class="ai-field"><label>GIỜ NGỦ / ĐÊM</label><input type="number" id="ai_sleep" value="7" step="0.5" oninput="validateField(this,'sleep')" onblur="validateField(this,'sleep')"><div class="field-error" id="err_sleep">⚠ Giờ ngủ từ 0 đến 24!</div><div class="field-ok" id="ok_sleep">✓ Hợp lệ</div></div>
+      <div class="ai-field"><label>THỨC ĐẾN MẤY GIỜ?</label><select id="ai_bedtime"><option value="22">Trước 10h tối</option><option value="23">11h tối</option><option value="24" selected>Nửa đêm</option><option value="1">1h sáng</option><option value="2">2-3h sáng</option><option value="4">Sau 4h sáng</option></select></div>
+      <div class="ai-field"><label>NGÀY THIẾU NGỦ / TUẦN</label><input type="number" id="ai_sleep_bad" value="1" oninput="validateField(this,'sleep_bad')" onblur="validateField(this,'sleep_bad')"><div class="field-error" id="err_sleep_bad">⚠ 0–7 ngày!</div><div class="field-ok" id="ok_sleep_bad">✓ Hợp lệ</div></div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">ĂN UỐNG & VẬN ĐỘNG</div>
+      <div class="ai-field"><label>CHẾ ĐỘ ĂN UỐNG</label><select id="ai_diet"><option value="3">Rất lành mạnh</option><option value="1">Tương đối lành mạnh</option><option value="0" selected>Trung bình</option><option value="-2">Nhiều đồ chiên, fast food</option><option value="-3">Rất tệ</option></select></div>
+      <div class="ai-field"><label>TẬP THỂ DỤC / TUẦN</label><select id="ai_exercise"><option value="5">5+ ngày/tuần</option><option value="3" selected>3-4 ngày/tuần</option><option value="1">1-2 ngày/tuần</option><option value="0">Không bao giờ</option></select></div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">YẾU TỐ RỦI RO</div>
+      <div class="ai-check-group" id="risk_checks">
+        <div class="ai-check" data-val="smoking" onclick="toggleCheck(this)">🚬 Hút thuốc</div>
+        <div class="ai-check" data-val="alcohol" onclick="toggleCheck(this)">🍺 Rượu nhiều</div>
+        <div class="ai-check" data-val="stress" onclick="toggleCheck(this)">😰 Stress mãn tính</div>
+        <div class="ai-check" data-val="overwork" onclick="toggleCheck(this)">💼 Làm >12h/ngày</div>
+        <div class="ai-check" data-val="nosocial" onclick="toggleCheck(this)">🚫 Cô lập xã hội</div>
+        <div class="ai-check" data-val="caffeine" onclick="toggleCheck(this)">☕ >4 ly cà phê/ngày</div>
+        <div class="ai-check" data-val="insomnia2d" onclick="toggleCheck(this)">🌙 Thức trắng 2 ngày</div>
+        <div class="ai-check" data-val="skipmeal" onclick="toggleCheck(this)">🍽 Bỏ ăn thường xuyên</div>
+        <div class="ai-check" data-val="sleep3h" onclick="toggleCheck(this)">😴 Ngủ &lt;3 tiếng</div>
+        <div class="ai-check" data-val="longstress" onclick="toggleCheck(this)">🧠 Stress >3 tháng</div>
+        <div class="ai-check" data-val="sedentary" onclick="toggleCheck(this)">🪑 Không vận động</div>
+        <div class="ai-check" data-val="energydrink" onclick="toggleCheck(this)">⚡ Nước tăng lực</div>
+      </div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">GHI CHÚ THÊM</div>
+      <div class="ai-field"><textarea id="ai_extra" placeholder="VD: hay đau đầu, hay quên..."></textarea></div>
+    </div>
+  </div>
+  <div class="ai-footer"><button class="ai-submit" id="aiSubmitBtn" onclick="runAIAnalysis()">🧬 PHÂN TÍCH NGAY</button></div>
+  <div class="ai-disclaimer">⚠ Mô phỏng AI — Không phải chẩn đoán y khoa</div>
+</div>
+<div class="ai-middle">
+  <div class="ai-middle-top"><h3><span class="ai-status-dot" id="aiDot"></span>HEALTH SCAN</h3><span class="ai-timestamp" id="aiTimestamp">—</span></div>
+  <div class="ai-middle-body" id="aiMiddleBody"><div class="ai-idle-middle"><div style="font-size:32px;opacity:.3">🧬</div><p>Chờ phân tích...</p></div></div>
+</div>
+<div class="ai-resize-handle" id="aiResizeHandle"></div>
+<div class="ai-right" id="aiRightPanel">
+  <div class="ai-right-top"><h3>💬 AI HEALTH ADVISOR</h3><span class="ai-timestamp" id="chatTimestamp">—</span></div>
+  <div class="ai-chat-msgs" id="chatMsgs">
+    <div class="chat-bubble system">👋 Xin chào! Điền thông tin bên trái và nhấn <b>PHÂN TÍCH NGAY</b>, hoặc hỏi bất cứ điều gì về sức khoẻ!</div>
+  </div>
+  <div class="quick-btns" id="quickBtns">
+    <button class="qbtn" onclick="sendQuick('Giải thích tuổi thọ của tôi')">📊 Giải thích tuổi thọ</button>
+    <button class="qbtn" onclick="sendQuick('Phân tích giấc ngủ của tôi')">😴 Phân tích giấc ngủ</button>
+    <button class="qbtn" onclick="sendQuick('Rủi ro nguy hiểm nhất của tôi là gì?')">⚠ Rủi ro nguy hiểm nhất</button>
+    <button class="qbtn" onclick="sendQuick('Lập kế hoạch cải thiện sức khỏe 30 ngày cho tôi')">📅 Kế hoạch 30 ngày</button>
+    <button class="qbtn" onclick="sendQuick('Tôi cần cải thiện điều gì trước tiên?')">💡 Cải thiện gì trước?</button>
+    <button class="qbtn" onclick="sendQuick('Lập thói quen (habit tracker) cho tôi dựa trên hồ sơ sức khoẻ')">📋 Habit Tracker</button>
+  </div>
+  <div class="ai-chat-input-row">
+    <textarea class="ai-chat-input" id="chatInput" rows="1" placeholder="Hỏi về sức khoẻ của bạn..." onkeydown="chatKeydown(event)" oninput="autoResize(this)"></textarea>
+    <button class="ai-chat-send" id="chatSendBtn" onclick="sendChat()">➤</button>
+  </div>
+</div>
+</div>
+
+<!-- FAMILY SCREEN -->
+<div id="familyScreen" class="screen">
+<div class="fam-header">
+  <div class="fam-header-left">
+    <h1>💌 KẾT NỐI GIA ĐÌNH</h1>
+    <p>NHẮC NHỞ YÊU THƯƠNG · CHĂM SÓC TỪ XA</p>
+  </div>
+  <button class="fam-back" onclick="backToMenu()">← MENU</button>
+</div>
+<div class="fam-body">
+  <!-- LEFT: member list -->
+  <div class="fam-left">
+    <div class="fam-left-top">
+      <h3>👨‍👩‍👧 THÀNH VIÊN</h3>
+      <button class="fam-add-btn" onclick="showAddMemberForm()">+ Thêm</button>
+    </div>
+    <div class="fam-member-list" id="famMemberList"></div>
+  </div>
+  <!-- CENTER: detail -->
+  <div class="fam-center">
+    <div class="fam-center-top" id="famCenterTop">
+      <div class="fam-avatar" id="famAvatar">👵</div>
+      <div class="fam-info">
+        <h2 id="famMemberName">Chọn thành viên</h2>
+        <p id="famMemberSub">Nhấn vào tên để xem lịch nhắc</p>
+      </div>
+    </div>
+    <div class="fam-center-scroll" id="famCenterScroll">
+      <div style="color:rgba(255,150,200,.2);text-align:center;margin-top:40px;font-size:12px;line-height:2">
+        💌 Chọn thành viên để xem<br>lịch nhắc và gửi tin nhắn yêu thương
+      </div>
+    </div>
+  </div>
+  <!-- RIGHT: quick messages -->
+  <div class="fam-right">
+    <div class="fam-right-top"><h3>📱 TIN NHẮN MẪU</h3></div>
+    <div class="fam-msg-preview" id="famMsgPreview">
+      <div style="color:rgba(255,150,200,.2);font-size:11px;text-align:center;padding:20px 10px;line-height:2">Chọn thành viên để xem tin nhắn mẫu phù hợp</div>
+    </div>
+    <div class="fam-quick-msgs" id="famQuickMsgs">
+      <p>GỬI NHANH</p>
+      <div id="famQuickBtns"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settingsScreen" class="screen">
+<div class="sett-panel">
+  <div class="sett-h">⚙ CÀI ĐẶT</div>
+  <div class="sett-sub">GAME SETTINGS · v9.0</div>
+  <div class="sett-sec">
+    <div class="sett-sec-t">🔊 ÂM THANH</div>
+    <div class="sett-row"><span class="sett-lbl">Nhạc nền</span><div class="sett-rv"><label class="tog-wrap"><input type="checkbox" id="tog_music" checked onchange="updateAudio()"><span class="tog-sl"></span></label><input type="range" id="sl_music" min="0" max="100" value="50" oninput="updateVol('music',this.value)"><span class="sett-val" id="sv_music">50%</span></div></div>
+    <div class="sett-row"><span class="sett-lbl">Hiệu ứng âm thanh</span><div class="sett-rv"><label class="tog-wrap"><input type="checkbox" id="tog_sfx" checked onchange="updateAudio()"><span class="tog-sl"></span></label><input type="range" id="sl_sfx" min="0" max="100" value="80" oninput="updateVol('sfx',this.value)"><span class="sett-val" id="sv_sfx">80%</span></div></div>
+  </div>
+  <div class="sett-sec">
+    <div class="sett-sec-t">⚔ ĐỘ KHÓ</div>
+    <div class="diff-grp">
+      <button class="diff-btn" onclick="setDiff('easy',this)">DỄ</button>
+      <button class="diff-btn active" onclick="setDiff('normal',this)">BÌNH THƯỜNG</button>
+      <button class="diff-btn" onclick="setDiff('hard',this)">KHÓ</button>
+    </div>
+    <div id="diffDesc" style="color:rgba(200,180,200,.4);font-size:9px;margin-top:9px;letter-spacing:1px">Mục tiêu chuẩn · Mệt mỏi chuẩn · Thu nhập chuẩn</div>
+  </div>
+  <div class="sett-sec">
+    <div class="sett-sec-t">🎮 ĐIỀU KHIỂN</div>
+    <div class="key-grid">
+      <div class="key-row"><span class="key-kbd">W A S D</span><span class="key-lbl">Di chuyển</span></div>
+      <div class="key-row"><span class="key-kbd">E</span><span class="key-lbl">Tương tác</span></div>
+      <div class="key-row"><span class="key-kbd">ESC</span><span class="key-lbl">Menu / Đóng</span></div>
+      <div class="key-row"><span class="key-kbd">↑↓←→</span><span class="key-lbl">Di chuyển (alt)</span></div>
+    </div>
+  </div>
+  <div class="sett-acts">
+    <button class="sa-btn pri" onclick="saveSettings()">💾 LƯU CÀI ĐẶT</button>
+    <button class="sa-btn sec" onclick="backToMenu()">← QUAY LẠI</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="movl" id="movl"><div class="mbox" id="mbox"></div></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG & DIFF
+// ══════════════════════════════════════════════════════════
+var CFG={musicOn:true,sfxOn:true,musicVol:.5,sfxVol:.8,diff:'normal'};
+var DIFF_MAP={easy:{gm:.65,dm:1.4,em:1.5,fm:.65,label:'DỄ',desc:'Mục tiêu giảm 35% · Thu nhập +50% · Ít mệt hơn'},normal:{gm:1,dm:1,em:1,fm:1,label:'BÌNH THƯỜNG',desc:'Mục tiêu chuẩn · Mệt mỏi chuẩn · Thu nhập chuẩn'},hard:{gm:1.5,dm:.82,em:.85,fm:1.3,label:'KHÓ',desc:'Mục tiêu +50% · Thu nhập giảm · Mệt mỏi nhanh hơn'}};
+var BASE_LVS=[{goal:50000000,days:32,story:'daughter',label:'Chương 1'},{goal:95000000,days:36,story:'debt',label:'Chương 2'},{goal:185000000,days:40,story:'hospital',label:'Chương 3'}];
+function getLvs(){var d=DIFF_MAP[CFG.diff];return BASE_LVS.map(function(l){return{goal:Math.round(l.goal*d.gm/1000000)*1000000,days:Math.round(l.days*d.dm),story:l.story,label:l.label};});}
+function getDiff(){return DIFF_MAP[CFG.diff];}
+
+// ══════════════════════════════════════════════════════════
+// AUDIO
+// ══════════════════════════════════════════════════════════
+var ACtx=window.AudioContext||window.webkitAudioContext,actx=null;
+var AMB={oscs:null,lfo:null,gain:null};
+function getAC(){if(!actx)actx=new ACtx();return actx;}
+function tone(f,tp,d,v,delay){if(!CFG.sfxOn)return;try{var a=getAC(),o=a.createOscillator(),g=a.createGain(),flt=a.createBiquadFilter(),st=a.currentTime+(delay||0);flt.type='lowpass';flt.frequency.value=3000;o.connect(flt);flt.connect(g);g.connect(a.destination);o.type=tp||'sine';o.frequency.value=f;var vol=(v||.08)*CFG.sfxVol;g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(vol,st+.01);g.gain.exponentialRampToValueAtTime(.001,st+d);o.start(st);o.stop(st+d+.05);}catch(e){}}
+var SFX={coin:function(){tone(880,'sine',.06,.12);setTimeout(function(){tone(1100,'sine',.08,.1);},40);},bigcoin:function(){[880,1100,1320,1760].forEach(function(f,i){tone(f,'sine',.14,.1,i*.06);});},click:function(){tone(700,'square',.05,.04);},coffee:function(){tone(440,'triangle',.12,.06);setTimeout(function(){tone(360,'triangle',.1,.05);},80);},sleep:function(){tone(220,'sine',.4,.05);setTimeout(function(){tone(180,'sine',.5,.04);},300);},warn:function(){for(var i=0;i<4;i++){(function(k){setTimeout(function(){tone(440,'square',.12,.1);},k*220);})(i);}},danger:function(){for(var i=0;i<5;i++){(function(k){setTimeout(function(){tone(380,'sawtooth',.15,.1);},k*180);})(i);}},death:function(){[300,250,200,160,120,90].forEach(function(f,i){tone(f,'sawtooth',1.2,.09,i*.18);});},win:function(){[262,330,392,523,659,784].forEach(function(f,i){tone(f,'sine',.28,.09,i*.1);});},heartbeat:function(){try{var a=getAC(),g=a.createGain(),o=a.createOscillator();o.connect(g);g.connect(a.destination);o.frequency.value=52;o.type='sine';var t=a.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.25*CFG.sfxVol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.15);o.start(t);o.stop(t+.17);}catch(e){}},story:function(){tone(330,'sine',.5,.05);setTimeout(function(){tone(392,'sine',.5,.05);},200);setTimeout(function(){tone(494,'sine',.6,.06);},400);},aibeep:function(){tone(600,'sine',.08,.05);setTimeout(function(){tone(800,'sine',.1,.06);},80);},event:function(){[[110,0],[138.6,.08],[164.8,.18],[207.7,.32]].forEach(function(p){tone(p[0],'sawtooth',.9,.12,p[1]);});},typing:function(){for(var i=0;i<8;i++){(function(k){setTimeout(function(){tone(300+Math.random()*200,'square',.03,.03);},k*60+Math.random()*30);})(i);}},npcTalk:function(){tone(500,'sine',.1,.06);setTimeout(function(){tone(550,'sine',.08,.05);},80);},family:function(){[523,659,784,1047].forEach(function(f,i){tone(f,'sine',.22,.08,i*.12);});}};
+var alarmInt=null,heartInt=null;
+function startAlarm(){if(alarmInt)return;SFX.danger();alarmInt=setInterval(function(){if(G.fatigue>=85&&G.scr==='game')SFX.danger();else stopAlarm();},1100);}
+function stopAlarm(){clearInterval(alarmInt);alarmInt=null;}
+function startHeartbeat(){if(heartInt)return;heartInt=setInterval(function(){if(G.hp<=30&&G.scr==='game')SFX.heartbeat();else stopHeartbeat();},700);}
+function stopHeartbeat(){clearInterval(heartInt);heartInt=null;}
+function startAmbient(type){stopAmbient();if(!CFG.musicOn)return;try{var a=getAC(),mg=a.createGain();mg.gain.value=CFG.musicVol*.09;mg.connect(a.destination);var base=type==='menu'?55:type==='tense'?41:49;var oscs=[];[base,base*1.5,base*2,base*2.5].forEach(function(f,i){var o=a.createOscillator(),g2=a.createGain();o.type=i<2?'sine':'triangle';o.frequency.value=f;o.detune.value=i%2===0?-5:5;g2.gain.value=i===0?.5:i===1?.25:i===2?.12:.07;o.connect(g2);g2.connect(mg);o.start();oscs.push(o);});var lfo=a.createOscillator(),lfog=a.createGain();lfo.frequency.value=.12;lfog.gain.value=.04;lfo.connect(lfog);lfog.connect(mg.gain);lfo.start();AMB.oscs=oscs;AMB.lfo=lfo;AMB.gain=mg;}catch(e){}}
+function stopAmbient(){if(!AMB.oscs)return;try{AMB.oscs.forEach(function(o){o.stop();});if(AMB.lfo)AMB.lfo.stop();}catch(e){}AMB.oscs=null;AMB.lfo=null;}
+function updateAudio(){CFG.musicOn=document.getElementById('tog_music').checked;CFG.sfxOn=document.getElementById('tog_sfx').checked;if(!CFG.musicOn)stopAmbient();else if(G.scr==='menu')startAmbient('menu');}
+function updateVol(t,v){var pct=Math.round(v);if(t==='music'){CFG.musicVol=pct/100;document.getElementById('sv_music').textContent=pct+'%';if(AMB.gain)AMB.gain.gain.value=CFG.musicVol*.09;}else{CFG.sfxVol=pct/100;document.getElementById('sv_sfx').textContent=pct+'%';}}
+
+// ══════════════════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════════════════
+var G={scr:'menu',level:0,day:1,hour:6,energy:100,hoursAwake:0,money:0,hp:100,fatigue:0,coffeeToday:0,sleptYesterday:false,timeUpdating:false,p:{x:500,y:320,sz:18,spd:3.2,moving:false},npcs:[],objs:[],keys:{},near:null,nearNpc:null,parts:[],shake:0,modalOpen:false,evOpen:false,goal:50000000,maxDays:32,tutorialShown:false,workingAnim:false,workAnimTimer:0,_raf:null};
+
+// ══════════════════════════════════════════════════════════
+// TIME / HELPERS
+// ══════════════════════════════════════════════════════════
+function updateGameTime(hours){if(!hours||hours<=0||G.timeUpdating)return false;hours=Math.max(1,Math.round(hours));G.timeUpdating=true;G.hour+=hours;G.hoursAwake+=hours;while(G.hour>=24){G.hour-=24;G.day++;G.coffeeToday=0;}if(G.hoursAwake>16){G.fatigue=Math.min(100,G.fatigue+Math.round(hours*2*(G.hoursAwake>16?1.5:1)*getDiff().fm));G.hp=Math.max(1,G.hp-Math.round(hours*.5));}updateHUD();if(G.day>G.maxDays&&G.money<G.goal){G.timeUpdating=false;triggerFail();return false;}checkEvents();G.timeUpdating=false;return true;}
+function canWork(){if(G.energy<=0){showM('⚡ KIỆT SỨC','<p>Năng lượng = 0. Hãy nghỉ ngơi trước!</p><button class="bok" onclick="closeM()">OK</button>');return false;}return true;}
+function getEfficiency(){var e=1;if(G.hoursAwake>20)e*=.4;else if(G.hoursAwake>16)e*=.6;else if(G.hoursAwake>12)e*=.8;if(G.energy<20)e*=.5;else if(G.energy<40)e*=.7;if(G.fatigue>80)e*=.5;else if(G.fatigue>60)e*=.75;return Math.max(.2,e);}
+function drainEnergy(h,intensity){G.energy=Math.max(0,Math.round(G.energy-h*5*(intensity||1)*(G.hoursAwake>16?1.5:1)));}
+function recoverEnergy(h,quality){G.energy=Math.min(100,Math.round(G.energy+h*8*(quality||1)));G.hoursAwake=Math.max(0,G.hoursAwake-h*2);}
+function formatHour(h){return(h<10?'0':'')+h+':00';}
+function fmt(n){if(n>=1000000)return(n/1000000).toFixed(1).replace('.0','')+'M đ';if(n>=1000)return Math.round(n/1000)+'K đ';return n+'đ';}
+function calcOT(mult){var base=2000000+G.level*1200000;var fatPen=G.fatigue>80?.5:G.fatigue>60?.75:G.fatigue>40?.9:1;return Math.round(base*mult*fatPen*getEfficiency()*getDiff().em/10000)*10000;}
+function fatAmt(base){return Math.round(base*getDiff().fm);}
+
+// ══════════════════════════════════════════════════════════
+// AI STATE
+// ══════════════════════════════════════════════════════════
+var AI_RESULT=null,chatHistory=[],chatBusy=false;
+var selectedRisks=[];
+function toggleCheck(el){SFX.click();var v=el.dataset.val,idx=selectedRisks.indexOf(v);if(idx>-1){selectedRisks.splice(idx,1);el.classList.remove('on');}else{selectedRisks.push(v);el.classList.add('on');}}
+
+function simulateHealthAnalysis(age,gender,bmi,sleep,sleepBad,dietVal,exVal,risks){
+    var baseLife=gender==='male'?76:81;var adj=0;
+    if(bmi<16)adj-=6;else if(bmi<18.5)adj-=2;else if(bmi<=24.9)adj+=2;else if(bmi<=29.9)adj-=1;else if(bmi<=34.9)adj-=4;else adj-=7;
+    if(sleep>=7&&sleep<=8)adj+=3;else if(sleep>=6&&sleep<7)adj+=1;else if(sleep>8&&sleep<=9)adj+=1;else if(sleep<4)adj-=6;else if(sleep<6)adj-=3;else if(sleep>10)adj-=2;
+    adj-=sleepBad*.7;adj+=parseInt(dietVal);
+    if(exVal>=5)adj+=5;else if(exVal>=3)adj+=2;else if(exVal===1)adj-=1;else adj-=4;
+    var rP={smoking:-10,alcohol:-5,stress:-4,overwork:-4,nosocial:-3,caffeine:-2,insomnia2d:-8,skipmeal:-3,sleep3h:-7,longstress:-5,sedentary:-4,energydrink:-3};
+    risks.forEach(function(r){adj+=(rP[r]||0);});var rc=risks.length;if(rc>=7)adj-=8;else if(rc>=5)adj-=5;else if(rc>=3)adj-=2;
+    adj=Math.max(-35,Math.min(15,adj));
+    var projected;if(age>=baseLife){projected=Math.round(age+Math.max(0,8+adj*.3+(Math.random()-.5)*4));}else{projected=Math.round(Math.max(age+1,baseLife+adj+(Math.random()-.5)*3));}
+    return{estimated_lifespan:projected,years_remaining:Math.max(1,projected-age),risk_level_percent:Math.round(Math.max(3,Math.min(95,45-adj*2+rc*3+(Math.random()-.5)*8))),health_status:adj>=0?'Improving':'Declining',adj:adj,age:age,gender:gender,bmi:bmi,sleep:sleep,sleepBad:sleepBad,dietVal:parseInt(dietVal),exVal:parseInt(exVal),risks:risks};
+}
+
+async function runAIAnalysis(){
+    if(!validateAllFields())return;
+    SFX.aibeep();var btn=document.getElementById('aiSubmitBtn');btn.disabled=true;btn.textContent='⏳ ĐANG PHÂN TÍCH...';
+    document.getElementById('aiDot').classList.add('active');
+    document.getElementById('aiTimestamp').textContent=new Date().toLocaleTimeString('vi-VN');
+    document.getElementById('chatTimestamp').textContent=new Date().toLocaleTimeString('vi-VN');
+    var age=parseInt(document.getElementById('ai_age').value)||30,gender=document.getElementById('ai_gender').value,bmi=parseFloat(document.getElementById('ai_bmi').value)||22,sleep=parseFloat(document.getElementById('ai_sleep').value)||7,sleepBad=parseInt(document.getElementById('ai_sleep_bad').value)||0,dietVal=document.getElementById('ai_diet').value,exVal=parseInt(document.getElementById('ai_exercise').value)||3,extra=document.getElementById('ai_extra').value.trim();
+    document.getElementById('aiMiddleBody').innerHTML='<div class="ai-loading"><div style="font-size:28px;opacity:.3">🧬</div><div class="scan-line-anim"></div><p>ĐANG QUÉT...</p></div>';
+    addChatBubble('bot','⏳ <b>Đang phân tích dữ liệu của bạn...</b>','');
+    await new Promise(function(r){setTimeout(r,1800);});
+    AI_RESULT=simulateHealthAnalysis(age,gender,bmi,sleep,sleepBad,dietVal,exVal,selectedRisks);
+    AI_RESULT.extra=extra;
+    renderMiddlePanel(AI_RESULT);
+    var systemCtx=buildSystemContext(AI_RESULT);chatHistory=[{role:'user',content:systemCtx}];
+    await streamAnalysisToChat(buildInitialAnalysisPrompt(AI_RESULT,extra));
+    btn.disabled=false;btn.textContent='🧬 PHÂN TÍCH LẠI';
+}
+function buildSystemContext(r){var riskNames={smoking:'Hút thuốc lá',alcohol:'Uống rượu nhiều',stress:'Stress mãn tính',overwork:'Làm việc >12h/ngày',nosocial:'Cô lập xã hội',caffeine:'>4 ly cà phê/ngày',insomnia2d:'Thức trắng 2 ngày',skipmeal:'Bỏ ăn thường xuyên',sleep3h:'Ngủ dưới 3 tiếng',longstress:'Stress kéo dài >3 tháng',sedentary:'Ngồi cả ngày không vận động',energydrink:'Lạm dụng nước tăng lực'};var riskList=r.risks.map(function(rk){return riskNames[rk]||rk;}).join(', ')||'Không có';var dietLabels={3:'Rất lành mạnh',1:'Tương đối lành mạnh',0:'Trung bình','-2':'Nhiều đồ chiên/fast food','-3':'Rất tệ'};var exLabels={5:'5+ ngày/tuần',3:'3-4 ngày/tuần',1:'1-2 ngày/tuần',0:'Không bao giờ'};return'Hồ sơ sức khỏe mô phỏng (game roleplay - giáo dục):\n- Tuổi: '+r.age+' | Giới tính: '+(r.gender==='male'?'Nam':'Nữ')+' | BMI: '+r.bmi+'\n- Ngủ: '+r.sleep+'h/đêm | Thiếu ngủ: '+r.sleepBad+' ngày/tuần\n- Chế độ ăn: '+(dietLabels[r.dietVal]||'Trung bình')+' | Tập thể dục: '+(exLabels[r.exVal]||'3-4 ngày/tuần')+'\n- Yếu tố rủi ro: '+riskList+'\n- Kết quả: Tuổi thọ ~'+r.estimated_lifespan+' tuổi | Rủi ro: '+r.risk_level_percent+'% | Xu hướng: '+(r.health_status==='Improving'?'Cải thiện':'Cần cải thiện')+'\n'+(r.extra?'- Ghi chú: '+r.extra+'\n':'')+'\nHãy là AI health buddy thân thiện, xưng "mình" gọi "bạn", dùng emoji, ngôn ngữ tự nhiên tiếng Việt. Roleplay game - mang tính giáo dục.';}
+function buildInitialAnalysisPrompt(r,extra){return'Dựa trên hồ sơ trên, phân tích sức khỏe theo: 1) Đánh giá tổng quan 2) Giấc ngủ 3) Yếu tố rủi ro 4) Ăn uống & vận động 5) Tuổi thọ '+r.estimated_lifespan+' tuổi có ý nghĩa gì 6) 3 điều cần làm NGAY. Thân thiện, dùng emoji, tiếng Việt.';}
+async function streamAnalysisToChat(prompt){chatBusy=true;var msgs=document.getElementById('chatMsgs');var last=msgs.lastElementChild;if(last&&last.textContent.includes('Đang phân tích'))last.remove();var te=document.createElement('div');te.className='chat-bubble bot';te.innerHTML='<span class="bot-label">🤖 AI HEALTH ADVISOR</span><div class="chat-typing"><span></span><span></span><span></span></div>';msgs.appendChild(te);msgs.scrollTop=msgs.scrollHeight;try{var mp=[].concat(chatHistory,{role:'user',content:prompt});var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:mp})});var data=await resp.json();var text=(data.content||[]).map(function(c){return c.text||'';}).join('');te.remove();addChatBubble('bot',formatChatText(text),'🤖 AI HEALTH ADVISOR');chatHistory.push({role:'user',content:prompt},{role:'assistant',content:text});}catch(e){te.remove();addChatBubble('bot',buildLocalAnalysis(AI_RESULT),'🤖 AI HEALTH ADVISOR');}chatBusy=false;}
+function buildLocalAnalysis(r){var lC=r.estimated_lifespan<65?'danger-text':r.estimated_lifespan<75?'warn-text':'highlight';var rC=r.risk_level_percent>70?'danger-text':r.risk_level_percent>40?'warn-text':'highlight';var riskNames={smoking:'🚬 Hút thuốc (-8 năm)',alcohol:'🍺 Rượu nhiều (-4 năm)',stress:'😰 Stress mãn tính (-3 năm)',overwork:'💼 Làm >12h/ngày (-3 năm)',nosocial:'🚫 Cô lập xã hội (-2 năm)',caffeine:'☕ Caffeine quá mức (-1 năm)',insomnia2d:'🌙 Thức trắng 2 ngày (-6 năm)',skipmeal:'🍽 Bỏ bữa thường xuyên (-3 năm)',sleep3h:'😴 Ngủ dưới 3h (-5 năm)',longstress:'🧠 Stress kéo dài (-4 năm)',sedentary:'🪑 Không vận động (-3 năm)',energydrink:'⚡ Nước tăng lực (-2 năm)'};var riskHtml='';r.risks.forEach(function(rk){riskHtml+='<li class="bad">'+(riskNames[rk]||rk)+'</li>';});return'<span class="chat-section-tag">📊 ĐÁNH GIÁ</span><br>Tuổi thọ: <span class="'+lC+'">'+r.estimated_lifespan+' tuổi</span> | Rủi ro: <span class="'+rC+'">'+r.risk_level_percent+'%</span><br><br>'+(r.risks.length>0?'<span class="chat-section-tag">⚠ RỦI RO</span><ul class="chat-list">'+riskHtml+'</ul><br>':'')+'<span class="chat-section-tag">💡 KHUYẾN NGHỊ</span><br>'+(r.risks.indexOf('smoking')>-1?'• <span class="danger-text">Bỏ thuốc lá là ưu tiên số 1</span><br>':'')+(r.sleep<6?'• Tăng giờ ngủ lên ít nhất 7h/đêm<br>':'')+(r.exVal<=1?'• Tập thể dục ít nhất 3 lần/tuần<br>':'')+'• Kiểm tra sức khỏe định kỳ 6 tháng/lần';}
+async function sendChat(){var input=document.getElementById('chatInput');var msg=input.value.trim();if(!msg||chatBusy)return;input.value='';autoResize(input);SFX.click();addChatBubble('user',msg,'BẠN');await sendToAI(msg);}
+function sendQuick(msg){if(chatBusy)return;SFX.click();addChatBubble('user',msg,'BẠN');sendToAI(msg);}
+async function sendToAI(msg){chatBusy=true;document.getElementById('chatSendBtn').disabled=true;var msgs=document.getElementById('chatMsgs');var te=document.createElement('div');te.className='chat-bubble bot';te.innerHTML='<span class="bot-label">🤖 AI HEALTH ADVISOR</span><div class="chat-typing"><span></span><span></span><span></span></div>';msgs.appendChild(te);msgs.scrollTop=msgs.scrollHeight;var context=AI_RESULT?buildSystemContext(AI_RESULT):'Người dùng chưa nhập thông tin. Trả lời câu hỏi sức khỏe chung bằng tiếng Việt, thân thiện, dùng emoji.';var payload=[{role:'user',content:context}].concat(chatHistory.slice(-6),{role:'user',content:msg});try{var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:payload})});var data=await resp.json();var text=(data.content||[]).map(function(c){return c.text||'';}).join('');te.remove();addChatBubble('bot',formatChatText(text),'🤖 AI HEALTH ADVISOR');chatHistory.push({role:'user',content:msg},{role:'assistant',content:text});if(chatHistory.length>20)chatHistory=chatHistory.slice(-16);}catch(e){te.remove();addChatBubble('bot',getFallbackResponse(msg),'🤖 AI HEALTH ADVISOR');}chatBusy=false;document.getElementById('chatSendBtn').disabled=false;}
+function getFallbackResponse(msg){var m=msg.toLowerCase();if(m.includes('ngủ'))return'😴 <b>Giấc ngủ</b> là nền tảng sức khỏe. Người lớn cần <span class="highlight">7-9 tiếng/đêm</span>.';if(m.includes('stress'))return'😰 <b>Stress mãn tính</b> làm tăng cortisol. Hãy thử: thiền 10 phút/ngày, tập thể dục, ngủ đủ giấc.';if(m.includes('tuổi thọ'))return AI_RESULT?'📊 Tuổi thọ ước tính của bạn là <span class="highlight">'+AI_RESULT.estimated_lifespan+' tuổi</span>.':'📊 Hãy nhập thông tin để tôi phân tích!';return'💡 '+(AI_RESULT?'Dựa trên hồ sơ của bạn, hãy ưu tiên cải thiện giấc ngủ và giảm stress.':'Hãy nhập thông tin sức khỏe để tôi phân tích cá nhân hóa!');}
+function formatChatText(text){return text.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>').replace(/^#{1,3}\s*(.+)$/gm,'<br><b style="color:#00d4b4;font-size:13px">$1</b><br>').replace(/^[-•]\s*(.+)$/gm,'<li class="good">$1</li>').replace(/(<li.*<\/li>\s*)+/g,'<ul class="chat-list">$&</ul>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');}
+function addChatBubble(type,html,label){var msgs=document.getElementById('chatMsgs');var div=document.createElement('div');div.className='chat-bubble '+type;var lbl=label?'<span class="'+(type==='bot'?'bot':'user')+'-label">'+label+'</span>':'';div.innerHTML=lbl+html;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,90)+'px';}
+
+function renderMiddlePanel(r){var isDanger=r.health_status==='Declining'||r.risk_level_percent>50;var lC=r.estimated_lifespan<65?'#ff4444':r.estimated_lifespan<75?'#ffd700':'#00d4b4';var rC=r.risk_level_percent>70?'#ff3333':r.risk_level_percent>40?'#ff8800':'#00d4b4';var mb=document.getElementById('aiMiddleBody');mb.innerHTML='';
+var bw=document.createElement('div');bw.style.display='flex';bw.style.flexDirection='column';bw.style.alignItems='center';
+var bc=document.createElement('canvas');bc.id='bodyCanvas';bc.width=160;bc.height=250;bw.appendChild(bc);var lbl=document.createElement('div');lbl.className='body-scan-label';lbl.textContent='HEALTH SCAN';bw.appendChild(lbl);mb.appendChild(bw);
+var cards=document.createElement('div');cards.className='ai-mini-cards';cards.innerHTML='<div class="ai-mini-card '+(isDanger?'danger':'good')+'"><div class="mc-lbl">TUỔI THỌ</div><div class="mc-val" style="color:'+lC+'">'+r.estimated_lifespan+'</div><div class="mc-unit">tuổi ước tính</div></div><div class="ai-mini-card '+(r.risk_level_percent>50?'danger':'good')+'"><div class="mc-lbl">MỨC RỦI RO</div><div class="mc-val" style="color:'+rC+'">'+r.risk_level_percent+'%</div><div class="mc-unit">'+(r.health_status==='Improving'?'↑ Cải thiện':'↓ Suy giảm')+'</div></div><div class="ai-risk-bar-wrap"><div class="rlbl"><span>RỦI RO</span><span style="color:'+rC+'">'+r.risk_level_percent+'%</span></div><div class="ai-risk-bar"><div class="ai-risk-fill" id="riskFill" style="width:0%;background:linear-gradient(90deg,#004a42,'+rC+')"></div></div></div>';mb.appendChild(cards);
+setTimeout(function(){var f=document.getElementById('riskFill');if(f)f.style.width=r.risk_level_percent+'%';},100);
+drawBodyDiagram(r,r.age);
+if(isDanger)SFX.warn();else SFX.win();}
+
+var bodyRaf=null;
+function drawBodyDiagram(r,age){
+    var c=document.getElementById('bodyCanvas');if(!c)return;
+    cancelAnimationFrame(bodyRaf);
+    var _age=age||(AI_RESULT?AI_RESULT.age:30)||30;
+    var sc=_age<=5?.42:_age<=10?.58:_age<=14?.74:_age<=17?.87:_age<=40?1:_age<=60?.96:_age<=75?.90:.82;
+    var hunch=_age>=70?.10:_age>=60?.05:0;
+    var status=r?r.health_status:'Improving',lifespan=r?r.estimated_lifespan:80;
+    function draw(){if(G.scr!=='ai')return;
+        var W=c.width=160,H=c.height=250,x=c.getContext('2d'),t=Date.now()/1000;
+        x.clearRect(0,0,W,H);
+        x.strokeStyle='rgba(0,212,180,.04)';x.lineWidth=1;for(var i=0;i<W;i+=16){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke();}for(var j=0;j<H;j+=16){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke();}
+        var sy=(t*50)%H;x.strokeStyle='rgba(0,212,180,.2)';x.lineWidth=1;x.beginPath();x.moveTo(0,sy);x.lineTo(W,sy);x.stroke();
+        var goodC=status==='Improving'?'#00d4b4':'#ff4444';var pulse=.88+Math.sin(t*(status==='Improving'?1.2:2.5))*.12;
+        var cxb=80,baseY=28;
+        var rad=x.createRadialGradient(cxb,baseY+70*sc,4,cxb,baseY+70*sc,55*pulse*sc);rad.addColorStop(0,status==='Improving'?'rgba(0,212,180,.18)':'rgba(255,60,60,.18)');rad.addColorStop(1,'transparent');x.fillStyle=rad;x.beginPath();x.arc(cxb,baseY+70*sc,55*pulse*sc,0,Math.PI*2);x.fill();
+        x.shadowColor=goodC;x.shadowBlur=8;x.strokeStyle=goodC;x.lineWidth=1.5;x.fillStyle='rgba(0,10,18,.9)';
+        // age tag
+        x.shadowBlur=0;var ageTag=_age<=12?'👶 Trẻ em':_age<=17?'🧒 Thiếu niên':_age<=35?'💪 Thanh niên':_age<=60?'🧑 Trung niên':_age<=75?'👴 Cao tuổi':'🧓 Lão niên';
+        x.font='bold 8px Inter,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='rgba(0,212,180,.45)';x.fillText(ageTag,cxb,baseY-5);
+        x.shadowColor=goodC;x.shadowBlur=7;
+        var headR=13*sc;
+        x.fillStyle='rgba(0,10,18,.9)';x.strokeStyle=goodC;x.beginPath();x.arc(cxb,baseY+headR,headR,0,Math.PI*2);x.fill();x.stroke();
+        x.fillStyle=goodC;x.shadowBlur=3;x.beginPath();x.arc(cxb-4*sc,baseY+headR-3*sc,2*sc,0,Math.PI*2);x.fill();x.beginPath();x.arc(cxb+4*sc,baseY+headR-3*sc,2*sc,0,Math.PI*2);x.fill();
+        x.save();x.translate(cxb,baseY+headR*2+1);x.rotate(hunch);
+        var nH=7*sc,tH=40*sc,tW=32*sc;
+        x.fillStyle='rgba(0,10,18,.9)';x.strokeStyle=goodC;x.fillRect(-4*sc,0,8*sc,nH);x.strokeRect(-4*sc,0,8*sc,nH);
+        x.beginPath();x.roundRect(-tW/2,nH,tW,tH,2);x.fill();x.stroke();
+        var aS=status==='Declining'?0:Math.sin(t*2)*5*sc;
+        x.beginPath();x.moveTo(-tW/2,nH+3);x.lineTo(-tW/2-10*sc,nH+20*sc+aS);x.stroke();x.beginPath();x.moveTo(tW/2,nH+3);x.lineTo(tW/2+10*sc,nH+20*sc-aS);x.stroke();
+        x.fillStyle=goodC;x.shadowBlur=2;x.beginPath();x.arc(-tW/2-10*sc,nH+22*sc+aS,3*sc,0,Math.PI*2);x.fill();x.beginPath();x.arc(tW/2+10*sc,nH+22*sc-aS,3*sc,0,Math.PI*2);x.fill();
+        var lS=Math.sin(t*2)*4*sc;x.strokeStyle=goodC;x.lineWidth=2*sc;var lSt=nH+tH;
+        x.beginPath();x.moveTo(-7*sc,lSt);x.lineTo(-9*sc+lS,lSt+33*sc);x.stroke();x.beginPath();x.moveTo(7*sc,lSt);x.lineTo(9*sc-lS,lSt+33*sc);x.stroke();
+        x.fillStyle=goodC;x.beginPath();x.ellipse(-9*sc+lS,lSt+35*sc,5*sc,2*sc,0,0,Math.PI*2);x.fill();x.beginPath();x.ellipse(9*sc-lS,lSt+35*sc,5*sc,2*sc,0,0,Math.PI*2);x.fill();
+        x.restore();x.shadowBlur=0;
+        var liftedY=baseY+headR*2+7*sc+40*sc+33*sc+26;var lC2=lifespan<65?'#ff4444':lifespan<75?'#ffd700':'#00d4b4';
+        x.font='bold 14px Courier New';x.textAlign='center';x.textBaseline='middle';x.fillStyle=lC2;x.fillText(lifespan?lifespan+'t':'—',cxb,liftedY);
+        x.fillStyle='rgba(255,255,255,.18)';x.font='7px Inter';x.fillText('TUỔI THỌ',cxb,liftedY+12);
+        x.fillStyle='rgba(0,212,180,.3)';x.font='9px Inter';x.fillText(_age+' tuổi',cxb,liftedY+23);
+        bodyRaf=requestAnimationFrame(draw);}draw();}
+
+// ══════════════════════════════════════════════════════════
+// FAMILY SCREEN
+// ══════════════════════════════════════════════════════════
+var FAM_MEMBERS=[
+    {id:1,name:'Ba',relation:'BỐ',emoji:'👴',ageGroup:'elder',age:65,conditions:['Huyết áp cao','Tiểu đường nhẹ'],reminders:[{id:1,icon:'💊',title:'Uống thuốc huyết áp',time:'07:00',note:'1 viên Amlodipine 5mg sau bữa sáng',done:false,urgent:true},{id:2,icon:'💧',title:'Nhắc uống đủ nước',time:'10:00',note:'Ba thường quên uống nước. Nhắc uống ít nhất 1.5L/ngày',done:false,urgent:false},{id:3,icon:'🩺',title:'Đo huyết áp',time:'18:00',note:'Ghi lại kết quả để theo dõi',done:false,urgent:false}]},
+    {id:2,name:'Mẹ',relation:'MẸ',emoji:'👵',ageGroup:'elder',age:62,conditions:['Đau khớp','Thiếu canxi'],reminders:[{id:1,icon:'💊',title:'Uống canxi + Vitamin D',time:'12:00',note:'Uống sau bữa trưa để hấp thu tốt hơn',done:false,urgent:false},{id:2,icon:'🚶',title:'Đi bộ nhẹ 20 phút',time:'08:00',note:'Giúp khớp linh hoạt, tốt cho xương',done:false,urgent:false},{id:3,icon:'🍲',title:'Nhắc ăn bữa tối',time:'18:30',note:'Mẹ hay bỏ bữa tối khi không có ai nhắc',done:false,urgent:true}]},
+    {id:3,name:'Ông Nội',relation:'ÔNG NỘI',emoji:'🧓',ageGroup:'elder',age:78,conditions:['Tim mạch','Đi lại khó'],reminders:[{id:1,icon:'💊',title:'Thuốc tim Aspirin',time:'08:00',note:'QUAN TRỌNG: 1 viên Aspirin 81mg sau ăn sáng',done:false,urgent:true},{id:2,icon:'☀️',title:'Phơi nắng buổi sáng',time:'09:00',note:'Ra sân ngồi nắng sáng 15-20 phút',done:false,urgent:false}]}
+];
+var selectedMember=null;
+var QUICK_MSGS_BY_REL={
+    BỐ:['Ba ơi, nhớ uống thuốc huyết áp chưa ạ? Con nhớ ba lắm 💙','Ba đo huyết áp hôm nay chưa? Báo con kết quả nhé ạ','Ba ơi đừng quên ăn cơm nha. Con lo ba bỏ bữa 🍚','Con chỉ muốn hỏi thăm ba, ba có khoẻ không ạ? ❤️'],
+    MẸ:['Mẹ ơi mẹ uống canxi chưa ạ? Nhớ uống sau bữa trưa nha mẹ 💊','Mẹ đi bộ chưa? Nhớ đi bộ nhẹ mỗi sáng để khớp khoẻ nha mẹ 🚶','Mẹ ơi nhớ ăn bữa tối nha, mẹ hay bỏ bữa con lo lắm 🍲','Mẹ ơi con nhớ mẹ. Mẹ khoẻ không ạ? ❤️'],
+    'ÔNG NỘI':['Ông ơi ông uống thuốc tim chưa ạ? Con lo cho ông lắm 💙','Ông ra phơi nắng sáng chưa ạ? Nắng sáng tốt cho sức khoẻ ông lắm ☀️','Ông ơi hôm nay ông thấy khoẻ không ạ? Cháu nhớ ông 🧡'],
+    DEFAULT:['Nhớ uống thuốc đúng giờ nha ạ 💊','Hôm nay có khoẻ không ạ? Con/cháu hỏi thăm ❤️','Nhớ ăn đủ bữa và uống đủ nước nhé 🍚💧']
+};
+
+function openFamily(){SFX.family();go('family');renderFamilyMemberList();}
+function renderFamilyMemberList(){var list=document.getElementById('famMemberList');list.innerHTML='';FAM_MEMBERS.forEach(function(m){var urgentCount=m.reminders.filter(function(r){return r.urgent&&!r.done;}).length;var card=document.createElement('div');card.className='fam-member-card'+(selectedMember&&selectedMember.id===m.id?' active':'');var nextReminder=m.reminders.find(function(r){return!r.done;});card.innerHTML='<div class="fm-name">'+m.emoji+' '+m.name+'</div><div class="fm-rel">'+m.relation+' · '+m.age+' tuổi</div>'+(nextReminder?'<div class="fm-next">⏰ Tiếp theo: '+nextReminder.title+' ('+nextReminder.time+')</div>':'<div class="fm-next" style="color:rgba(0,212,180,.5)">✅ Tất cả đã nhắc hôm nay</div>')+(urgentCount>0?'<div class="fm-badge"></div>':'<div class="fm-badge ok"></div>');card.onclick=function(){selectMember(m);};list.appendChild(card);});}
+function selectMember(m){selectedMember=m;renderFamilyMemberList();// Avatar
+var av=document.getElementById('famAvatar');av.textContent=m.emoji;av.className='fam-avatar'+(m.ageGroup==='elder'?' age-elder':m.ageGroup==='child'?' age-child':'');document.getElementById('famMemberName').textContent=m.name;document.getElementById('famMemberSub').textContent=m.relation+' · '+m.age+' tuổi · '+m.conditions.join(', ');renderReminders(m);renderQuickMsgs(m);renderMsgPreview(m);}
+function renderReminders(m){var scroll=document.getElementById('famCenterScroll');scroll.innerHTML='';// Health conditions
+var condDiv=document.createElement('div');condDiv.innerHTML='<div class="fam-section-label">🩺 TÌNH TRẠNG SỨC KHOẺ</div>'+m.conditions.map(function(c){return'<span style="background:rgba(255,150,200,.1);border:1px solid rgba(255,150,200,.2);border-radius:4px;padding:3px 10px;font-size:10px;color:rgba(255,180,210,.7);margin-right:6px;display:inline-block;margin-bottom:5px">'+c+'</span>';}).join('');scroll.appendChild(condDiv);
+// Reminders
+var remDiv=document.createElement('div');remDiv.innerHTML='<div class="fam-section-label" style="margin-top:10px">⏰ LỊCH NHẮC HÔM NAY</div>';m.reminders.forEach(function(r){var card=document.createElement('div');card.className='reminder-card'+(r.urgent?' urgent':'')+(r.done?' done':'');card.innerHTML='<div class="rc-icon">'+r.icon+'</div><div class="rc-body"><div class="rc-title">'+r.title+'</div><div class="rc-time">🕐 '+r.time+(r.urgent?' &nbsp;<span style="color:#ff6060;font-size:9px;font-weight:bold">● QUAN TRỌNG</span>':'')+'</div><div class="rc-note">'+r.note+'</div></div>'+(r.done?'<button class="rc-done" onclick="undoneReminder('+m.id+','+r.id+')">✅ Đã nhắc</button>':'<button class="rc-send" onclick="sendReminder('+m.id+','+r.id+')">📲 Gửi nhắc</button>');remDiv.appendChild(card);});scroll.appendChild(remDiv);
+// Add reminder button
+var addDiv=document.createElement('div');addDiv.style.marginTop='10px';addDiv.innerHTML='<div class="fam-section-label">➕ THÊM NHẮC MỚI</div><button onclick="toggleAddReminder(this)" style="background:rgba(255,150,200,.1);border:1px dashed rgba(255,150,200,.3);color:rgba(255,150,200,.6);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:11px;width:100%;transition:all .2s" onmouseover="this.style.background=\'rgba(255,150,200,.18)\'" onmouseout="this.style.background=\'rgba(255,150,200,.1)\'">+ Thêm lịch nhắc cho '+m.name+'</button><div class="fam-add-reminder" id="addReminderForm"><label class="fam-inp-label">Tiêu đề nhắc nhở</label><input class="fam-inp" id="rem_title" placeholder="VD: Uống thuốc buổi chiều"><div class="fam-inp-row"><div style="flex:1"><label class="fam-inp-label">Giờ nhắc</label><input class="fam-inp" type="time" id="rem_time" value="14:00"></div><div style="flex:1"><label class="fam-inp-label">Biểu tượng</label><input class="fam-inp" id="rem_icon" value="💊" placeholder="VD: 💊💧🚶"></div></div><label class="fam-inp-label">Ghi chú chi tiết</label><input class="fam-inp" id="rem_note" placeholder="VD: 1 viên sau bữa ăn"><div style="display:flex;gap:7px;margin-top:5px"><button class="fam-save-btn" onclick="saveReminder('+m.id+')">💾 Lưu</button><button onclick="toggleAddReminder(this.previousElementSibling)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);padding:8px 14px;font-family:\'Courier New\',monospace;font-size:11px;cursor:pointer;border-radius:4px">Huỷ</button></div></div>';scroll.appendChild(addDiv);
+// AI generate reminder btn
+var aiBtn=document.createElement('div');aiBtn.style.marginTop='10px';aiBtn.innerHTML='<button onclick="aiGenerateReminders('+m.id+')" style="width:100%;background:linear-gradient(135deg,rgba(0,212,180,.1),rgba(0,212,180,.05));border:1px solid rgba(0,212,180,.25);color:rgba(0,212,180,.7);padding:9px;font-size:11px;cursor:pointer;border-radius:6px;font-family:\'Inter\',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.background=\'rgba(0,212,180,.15)\'" onmouseout="this.style.background=\'linear-gradient(135deg,rgba(0,212,180,.1),rgba(0,212,180,.05))\'">🤖 AI tạo lịch nhắc phù hợp cho '+m.name+'</button>';scroll.appendChild(aiBtn);}
+
+function toggleAddReminder(btn){var form=document.getElementById('addReminderForm');form.classList.toggle('show');if(form.classList.contains('show'))document.getElementById('rem_title').focus();}
+function saveReminder(memberId){var m=FAM_MEMBERS.find(function(x){return x.id===memberId;});if(!m)return;var title=document.getElementById('rem_title').value.trim();var time=document.getElementById('rem_time').value;var icon=document.getElementById('rem_icon').value.trim()||'💊';var note=document.getElementById('rem_note').value.trim();if(!title){showToast('⚠ Nhập tiêu đề nhắc!','red');return;}var newId=Date.now();m.reminders.push({id:newId,icon:icon,title:title,time:time,note:note||'Không có ghi chú',done:false,urgent:false});SFX.win();showToast('✅ Đã thêm lịch nhắc cho '+m.name+'!');renderReminders(m);renderFamilyMemberList();}
+function sendReminder(memberId,remId){var m=FAM_MEMBERS.find(function(x){return x.id===memberId;});if(!m)return;var rem=m.reminders.find(function(r){return r.id===remId;});if(!rem)return;rem.done=true;SFX.family();var msgs=QUICK_MSGS_BY_REL[m.relation]||QUICK_MSGS_BY_REL.DEFAULT;var autoMsg=rem.icon+' '+m.name+' ơi, '+rem.note.toLowerCase().replace(/^\w/,function(c){return c.toLowerCase();})+' nha ạ! ❤️';appendMsgPreview(m,autoMsg);showToast('💌 Đã gửi nhắc: '+rem.title+' cho '+m.name,'');renderReminders(m);renderFamilyMemberList();}
+function undoneReminder(memberId,remId){var m=FAM_MEMBERS.find(function(x){return x.id===memberId;});if(!m)return;var rem=m.reminders.find(function(r){return r.id===remId;});if(rem)rem.done=false;renderReminders(m);renderFamilyMemberList();}
+function renderQuickMsgs(m){var btns=document.getElementById('famQuickBtns');var msgs=QUICK_MSGS_BY_REL[m.relation]||QUICK_MSGS_BY_REL.DEFAULT;btns.innerHTML='';msgs.forEach(function(msg){var btn=document.createElement('button');btn.className='fam-quick-msg-btn';btn.innerHTML=msg.substring(0,60)+(msg.length>60?'...':'')+'<span>Nhấn để xem & gửi</span>';btn.onclick=function(){showSendMsgModal(m,msg);};btns.appendChild(btn);});}
+function renderMsgPreview(m){var preview=document.getElementById('famMsgPreview');preview.innerHTML='<div class="msg-meta">LỊCH SỬ TIN NHẮN (mô phỏng)</div>';var sample=[{out:true,msg:'Con nhớ ba lắm ạ! Ba có khoẻ không?'},{out:false,msg:'Ba khoẻ con ơi! Cảm ơn con nhớ đến ba 😊'}];sample.forEach(function(s){var d=document.createElement('div');d.className=s.out?'msg-bubble-out':'msg-bubble-in';d.textContent=s.msg;preview.appendChild(d);});}
+function appendMsgPreview(m,msg){var preview=document.getElementById('famMsgPreview');var d=document.createElement('div');d.className='msg-bubble-out';d.innerHTML='<div class="msg-meta">Vừa gửi</div>'+msg;preview.appendChild(d);preview.scrollTop=preview.scrollHeight;}
+function showSendMsgModal(m,msg){showM('📱 GỬI TIN NHẮN — '+m.name,'<div class="pbox" style="font-size:13px;line-height:1.8;color:#ffe0f0">'+msg+'</div><p style="color:rgba(255,150,200,.5);font-size:10px;margin-top:8px">Đây là tin nhắn mô phỏng. Bạn có thể copy để gửi qua Zalo/SMS.</p><div style="display:flex;gap:8px;margin-top:12px"><button class="bok pink" onclick="confirmSendMsg(\''+m.id+'\',this)" style="flex:1">💌 Đã gửi!</button><button class="bok" onclick="copyMsg(\''+msg.replace(/'/g,"\\'")+'\')" style="background:#2a3a5a;flex:1">📋 Copy</button><button class="bok sec" onclick="closeM()" style="background:#1a1a2a;flex:1;border:1px solid #333">Huỷ</button></div>');}
+function confirmSendMsg(memberId,btn){SFX.family();var m=FAM_MEMBERS.find(function(x){return x.id==memberId;});if(m){var msgs=QUICK_MSGS_BY_REL[m.relation]||QUICK_MSGS_BY_REL.DEFAULT;appendMsgPreview(m,msgs[Math.floor(Math.random()*msgs.length)]);}closeM();showToast('💌 Tin nhắn đã được gửi cho '+m.name+'!');}
+function copyMsg(msg){if(navigator.clipboard){navigator.clipboard.writeText(msg).then(function(){showToast('📋 Đã copy tin nhắn!');});}else{showToast('💡 Copy thủ công: Ctrl+C');}}
+async function aiGenerateReminders(memberId){var m=FAM_MEMBERS.find(function(x){return x.id===memberId;});if(!m)return;showToast('🤖 AI đang tạo lịch nhắc...');var prompt='Tạo 3 lịch nhắc sức khoẻ cụ thể cho '+m.name+' ('+m.age+' tuổi, có: '+m.conditions.join(', ')+') theo format JSON array: [{"icon":"emoji","title":"tiêu đề ngắn","time":"HH:MM","note":"ghi chú chi tiết"}]. Chỉ trả về JSON, không thêm text.';try{var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})});var data=await resp.json();var text=(data.content||[]).map(function(c){return c.text||'';}).join('').replace(/```json|```/g,'').trim();var newRems=JSON.parse(text);newRems.forEach(function(r,i){m.reminders.push({id:Date.now()+i,icon:r.icon||'💊',title:r.title,time:r.time||'09:00',note:r.note||'',done:false,urgent:false});});SFX.win();showToast('🤖 AI đã tạo '+newRems.length+' lịch nhắc mới!');renderReminders(m);renderFamilyMemberList();}catch(e){showToast('⚠ Không kết nối được AI, thử lại sau','red');}}
+function showAddMemberForm(){showM('👤 THÊM THÀNH VIÊN','<div class="ai-field"><label style="color:rgba(255,150,200,.5);font-size:10px">TÊN GỌI</label><input class="fam-inp" id="newMemberName" placeholder="VD: Bà Nội, Chị Hai..."></div><div class="ai-field" style="margin-top:8px"><label style="color:rgba(255,150,200,.5);font-size:10px">MỐI QUAN HỆ</label><select class="fam-inp" id="newMemberRel"><option value="BÀ NỘI">Bà Nội</option><option value="ÔNG NGOẠI">Ông Ngoại</option><option value="BÀ NGOẠI">Bà Ngoại</option><option value="ANH">Anh</option><option value="CHỊ">Chị</option><option value="EM">Em</option><option value="KHÁC">Khác</option></select></div><div class="ai-field" style="margin-top:8px"><label style="color:rgba(255,150,200,.5);font-size:10px">TUỔI</label><input class="fam-inp" id="newMemberAge" type="number" value="60"></div><div class="ai-field" style="margin-top:8px"><label style="color:rgba(255,150,200,.5);font-size:10px">TÌNH TRẠNG SỨC KHOẺ (ngăn cách bằng dấu phẩy)</label><input class="fam-inp" id="newMemberCond" placeholder="VD: Huyết áp cao, Tiểu đường"></div><div style="display:flex;gap:8px;margin-top:14px"><button class="bok pink" onclick="addNewMember()" style="flex:1">+ Thêm thành viên</button><button class="bok" onclick="closeM()" style="background:#1a1a2a;flex:1;border:1px solid #333">Huỷ</button></div>');}
+function addNewMember(){var name=document.getElementById('newMemberName').value.trim();if(!name){showToast('⚠ Nhập tên thành viên!','red');return;}var rel=document.getElementById('newMemberRel').value;var age=parseInt(document.getElementById('newMemberAge').value)||50;var condStr=document.getElementById('newMemberCond').value.trim();var conds=condStr?condStr.split(',').map(function(c){return c.trim();}):['Chưa có thông tin'];var emojis={'BÀ NỘI':'👵','ÔNG NGOẠI':'👴','BÀ NGOẠI':'👵','ANH':'🧔','CHỊ':'👩','EM':'🧒','KHÁC':'👤'};FAM_MEMBERS.push({id:Date.now(),name:name,relation:rel,emoji:emojis[rel]||'👤',ageGroup:age>=60?'elder':age<=17?'child':'adult',age:age,conditions:conds,reminders:[]});closeM();SFX.family();showToast('✅ Đã thêm '+name+' vào gia đình!');renderFamilyMemberList();}
+
+// ══════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════
+function showToast(msg,type){var t=document.createElement('div');t.className='toast'+(type==='pink'?' pink':type==='red'?' red':'');t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(function(){t.remove();},400);},2800);}
+
+// ══════════════════════════════════════════════════════════
+// STORY EVENTS
+// ══════════════════════════════════════════════════════════
+var LV_EVENTS={daughter:[{day:9,triggered:false,chapter:'🚨 BIẾN CỐ · NGÀY 9',title:'Biến <span style="color:#ff4444">Chứng Bất Ngờ</span>',text:'11 giờ đêm. Bác sĩ gọi: bé Linh sốt cao, viêm phổi sau phẫu thuật.',extraGoal:12000000},{day:20,triggered:false,chapter:'💊 BIẾN CỐ · NGÀY 20',title:'Thuốc Đặc Trị <span style="color:#ff4444">Khan Hiếm</span>',text:'Linh cần liệu trình phục hồi dài hạn. Thuốc nhập khẩu đắt gấp đôi.',extraGoal:8000000}],debt:[{day:8,triggered:false,chapter:'📈 BIẾN CỐ · NGÀY 8',title:'Lãi Mẹ <span style="color:#ff4444">Đẻ Lãi Con</span>',text:'Người cho vay gọi: lãi trễ cộng vào gốc. Con số nhảy lên cao hơn anh tưởng.',extraGoal:22000000},{day:22,triggered:false,chapter:'🚪 BIẾN CỐ · NGÀY 22',title:'Chúng <span style="color:#ff4444">Gõ Cửa Nhà</span>',text:'Hai người đàn ông gõ cửa tối. Nhìn vào phòng Linh đang ngủ.',extraGoal:18000000}],hospital:[{day:9,triggered:false,chapter:'🔬 BIẾN CỐ · NGÀY 9',title:'Khối U <span style="color:#ff4444">Thứ Hai</span>',text:'PET scan phát hiện thêm một khối u ở gan.',extraGoal:45000000},{day:25,triggered:false,chapter:'✈️ BIẾN CỐ · NGÀY 25',title:'Thiết Bị <span style="color:#ff4444">Nhập Khẩu</span>',text:'Hội đồng y khoa: cần robot phẫu thuật thế hệ mới, tỷ lệ thành công +40%.',extraGoal:35000000}]};
+function resetLvEvents(sk){if(LV_EVENTS[sk])LV_EVENTS[sk].forEach(function(e){e.triggered=false;});}
+function checkEvents(){var lvs=getLvs(),story=lvs[G.level]?lvs[G.level].story:null;if(!story)return;(LV_EVENTS[story]||[]).forEach(function(ev){if(!ev.triggered&&G.day>=ev.day){ev.triggered=true;setTimeout(function(){showStoryEvent(ev);},300);}});}
+function showStoryEvent(ev){SFX.event();var newGoal=G.goal+ev.extraGoal;document.getElementById('evChapter').textContent=ev.chapter;document.getElementById('evTitle').innerHTML=ev.title;document.getElementById('evText').innerHTML=ev.text;document.getElementById('evVal').textContent='+'+fmt(ev.extraGoal);document.getElementById('evNew').textContent='Mục tiêu mới: '+fmt(newGoal)+' (còn '+Math.max(0,G.maxDays-G.day)+' ngày)';G.goal=newGoal;G.evOpen=true;document.getElementById('evOverlay').classList.add('on');updateHUD();}
+function closeEvent(){G.evOpen=false;document.getElementById('evOverlay').classList.remove('on');SFX.click();}
+
+// ══════════════════════════════════════════════════════════
+// ROUTING
+// ══════════════════════════════════════════════════════════
+function go(s){document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('active');});G.scr=s;if(s==='menu'){document.getElementById('mainMenu').classList.add('active');startAmbient('menu');}else if(s==='story'){document.getElementById('storyScreen').classList.add('active');stopAmbient();}else if(s==='game'){document.getElementById('gameScreen').classList.add('active');startAmbient('office');updateHUD();requestAnimationFrame(gameLoop);}else if(s==='ai'){document.getElementById('aiScreen').classList.add('active');stopAmbient();}else if(s==='family'){document.getElementById('familyScreen').classList.add('active');stopAmbient();}else if(s==='settings'){document.getElementById('settingsScreen').classList.add('active');}}
+function backToMenu(){SFX.click();stopAlarm();stopHeartbeat();closeM();cancelAnimationFrame(G._raf);go('menu');}
+function openAI(){SFX.aibeep();go('ai');}
+function openFamily(){SFX.family();renderFamilyMemberList();go('family');}
+function openSettings(){SFX.click();go('settings');}
+function saveSettings(){SFX.win();go('menu');}
+function setDiff(d,btn){CFG.diff=d;document.querySelectorAll('.diff-grp')[0].querySelectorAll('.diff-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('diffDesc').textContent=DIFF_MAP[d].desc;SFX.click();}
+
+// ══════════════════════════════════════════════════════════
+// STORIES
+// ══════════════════════════════════════════════════════════
+var STORIES={daughter:{chapter:'Chương 1 · Người Cha',title:'Vì <span style="color:#ffd700">Con Gái</span> Nhỏ',text:'Minh, 38 tuổi, nhân viên văn phòng bình thường.\n\nCon gái anh — bé Linh, 7 tuổi — vừa được chẩn đoán cần phẫu thuật tim bẩm sinh. Bác sĩ nói: không thể chờ.\n\nChi phí ban đầu: <b style="color:#ffd700">50,000,000đ</b>. Bảo hiểm không đủ. Người thân không có. Thời hạn: 32 ngày.\n\n<em style="color:rgba(200,180,180,.7)">"Ba sẽ lo được con ơi..." — anh nói, giọng run.</em>'},debt:{chapter:'Chương 2 · Áp Lực',title:'Khoản Nợ <span style="color:#ff4444">Không Hồi Kết</span>',text:'Tiền phẫu thuật đã lo xong. Linh đã ổn.\n\nNhưng để trả kịp tháng trước, Minh đã vay tín dụng đen. Lãi 28%/tháng.\n\nSố tiền cần trả: <b style="color:#ffd700">95,000,000đ</b>. Thời hạn 36 ngày.\n\n<em style="color:rgba(200,180,180,.7)">Anh ngủ 3 tiếng mỗi đêm. Mắt đỏ hoe.</em>'},hospital:{chapter:'Chương 3 · Ranh Giới',title:'Căn Phòng <span style="color:#e63946">Cuối Hành Lang</span>',text:'Nợ đã trả. Minh thở phào — được hai ngày.\n\nMẹ anh gọi điện. Kết quả: ung thư giai đoạn 2.\n\nChi phí điều trị: <b style="color:#ffd700">185,000,000đ</b>. Bác sĩ nói còn 40 ngày.\n\n<em style="color:rgba(200,180,180,.7)">"Tiền có thể kiếm lại. Nhưng mẹ thì không."</em>'}};
+function openStory(){SFX.story();G.level=0;G.day=1;G.hour=6;G.energy=100;G.hoursAwake=0;G.money=0;G.hp=100;G.fatigue=0;G.coffeeToday=0;G.sleptYesterday=false;G.timeUpdating=false;var lvs=getLvs();G.goal=lvs[0].goal;G.maxDays=lvs[0].days;resetLvEvents(lvs[0].story);showStoryScreen(lvs[0].story,lvs[0]);}
+function showStoryScreen(s,lv){go('story');var sd=STORIES[s];document.getElementById('storyScroll').innerHTML='<div class="story-chapter">'+sd.chapter+'</div><div class="story-title">'+sd.title+'</div><div class="story-text">'+sd.text.replace(/\n/g,'<br>')+'</div><div class="story-goal"><div class="goal-lbl">🎯 MỤC TIÊU</div><div class="goal-val">'+fmt(lv.goal)+'</div><div class="goal-sub">Kiếm đủ trong '+lv.days+' ngày · Độ khó: '+DIFF_MAP[CFG.diff].label+'</div></div>';document.getElementById('storyControls').innerHTML='<button class="story-btn" onclick="startGameFromStory()">▶ BẮT ĐẦU</button><button class="story-btn sec" onclick="backToMenu()">← MENU</button>';animStoryBg();}
+function startGameFromStory(){SFX.click();initWorld();if(!G.tutorialShown){G.tutorialShown=true;showM('📖 HƯỚNG DẪN','<div class="ibox"><p>🎮 <b>Di chuyển:</b> WASD / Arrow keys</p></div><div class="ibox"><p>⚡ <b>Tương tác:</b> Đến gần đồ vật, nhấn E</p></div><div class="gbox"><p>🎯 Kiếm đủ tiền trước khi hết ngày</p></div><div class="pbox"><p>💌 Ghé "Kết Nối Gia Đình" để nhắc ba mẹ uống thuốc!</p></div><button class="bok gold" onclick="closeM();go(\'game\')" style="width:100%;font-size:14px;padding:12px">▶ BẮT ĐẦU CHƠI!</button>');}else{go('game');}}
+var storyBgRaf;
+function animStoryBg(){cancelAnimationFrame(storyBgRaf);var c=document.getElementById('storyBg'),x=c.getContext('2d');function draw(){if(G.scr!=='story')return;var W=c.width=window.innerWidth,H=c.height=window.innerHeight,t=Date.now()/1000;var g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#00010c');g.addColorStop(1,'#0a0005');x.fillStyle=g;x.fillRect(0,0,W,H);x.strokeStyle='rgba(120,80,80,.15)';x.lineWidth=1;for(var i=0;i<60;i++){var rx=((i*137.5+t*160)%W),ry=((t*200+i*83)%H);x.beginPath();x.moveTo(rx,ry);x.lineTo(rx-2,ry+14);x.stroke();}storyBgRaf=requestAnimationFrame(draw);}draw();}
+
+// ══════════════════════════════════════════════════════════
+// WORLD
+// ══════════════════════════════════════════════════════════
+function initWorld(){
+    G.objs=[{x:160,y:220,w:100,h:70,t:'overtime',lbl:'Tăng ca',ic:'⏰',col:'#4a90e2',desc:'+$$ Tiền OT'},{x:380,y:210,w:100,h:70,t:'overtime2',lbl:'Dự án ngoài',ic:'💼',col:'#3b82f6',desc:'+$$$ Dự án'},{x:620,y:215,w:100,h:70,t:'overtime3',lbl:'Làm qua đêm',ic:'🌙',col:'#6c63ff',desc:'+$$$$ Đêm khuya'},{x:840,y:210,w:95,h:70,t:'freelance',lbl:'Freelance',ic:'💻',col:'#8b5cf6',desc:'+$$$ Freelance'},{x:140,y:480,w:95,h:65,t:'sleep',lbl:'Về nhà ngủ',ic:'🛏',col:'#06b6d4',desc:'Phục hồi'},{x:300,y:475,w:95,h:65,t:'rest',lbl:'Nghỉ ngơi',ic:'🧘',col:'#10b981',desc:'-Mệt +HP'},{x:460,y:475,w:95,h:65,t:'exercise',lbl:'Tập thể dục',ic:'🏋',col:'#f59e0b',desc:'+HP -Stress'},{x:620,y:475,w:95,h:65,t:'coffee',lbl:'Quán Ăn',ic:'🍽',col:'#d97706',desc:'Cafe & Đồ ăn'},{x:780,y:475,w:95,h:65,t:'gaming',lbl:'Chơi game',ic:'🎮',col:'#ec4899',desc:'-Stress +Vui'},{x:920,y:475,w:80,h:65,t:'doctor',lbl:'Khám bệnh',ic:'🏥',col:'#059669',desc:'+30HP | -20% mệt'}];
+    G.npcs=[{x:135,y:190,col:'#4a90e2',spd:.25,tx:null,ty:null,name:'Phong',advice:['Ông ơi coi chừng sức khỏe!','Mệt quá thì nghỉ đi!','Nhớ ngủ đủ giấc nhé.']},{x:355,y:190,col:'#6c63ff',spd:.25,tx:null,ty:null,name:'Lâm',advice:['Cẩn thận kiệt sức!','Sức khỏe quan trọng hơn tiền.','Nên nghỉ ngơi một chút.']},{x:655,y:190,col:'#10b981',spd:.25,tx:null,ty:null,name:'Mai',advice:['Đêm khuya rồi, về ngủ đi!','Ngủ đủ sẽ làm hiệu quả hơn.','Cà phê nhiều quá hại tim lắm!']},{x:800,y:240,col:'#f59e0b',spd:.30,tx:null,ty:null,name:'Chi',advice:['Cố lên sếp ơi!','Bên y tế có gói khám tổng quát đó.']},{x:235,y:320,col:'#ec4899',spd:.28,tx:null,ty:null,name:'Linh',advice:['Ê sắp kiệt sức rồi nha cha nội.','Ủa uống cafe hoài không sợ đau bao tử hả?']}];
+    G.parts=[];
+    // Schedule family reminders in-game
+    scheduleGameReminders();
+}
+var gameReminderTimer=null;
+function scheduleGameReminders(){clearTimeout(gameReminderTimer);var pending=[];FAM_MEMBERS.forEach(function(m){m.reminders.forEach(function(r){if(!r.done&&r.urgent){pending.push({member:m,reminder:r});}});});if(pending.length>0){var item=pending[Math.floor(Math.random()*pending.length)];gameReminderTimer=setTimeout(function(){if(G.scr==='game'){var el=document.getElementById('gameReminder');el.innerHTML='💌 Nhắc gia đình: '+item.member.emoji+' <b>'+item.member.name+'</b> — '+item.reminder.title+' ('+item.reminder.time+') <span style="opacity:.6;font-size:9px">· Nhấn để đóng</span>';el.style.display='block';setTimeout(function(){el.style.display='none';},8000);}},45000+(Math.random()*60000));}}
+
+// ══════════════════════════════════════════════════════════
+// INPUT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown',function(e){G.keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e'&&!G.modalOpen&&!G.evOpen){if(G.nearNpc)talkToNpc(G.nearNpc);else interact();}if(e.key==='Escape'){closeM();if(G.evOpen)closeEvent();else if(G.scr==='game')backToMenu();}});
+document.addEventListener('keyup',function(e){G.keys[e.key.toLowerCase()]=false;});
+
+// ══════════════════════════════════════════════════════════
+// PARTICLES
+// ══════════════════════════════════════════════════════════
+function spawnP(x,y,tp){var cs={money:['#ffd700','#ffaa00','#fff176'],dmg:['#ff4444','#ff6666','#cc0000']};var c=cs[tp]||cs.money;for(var i=0;i<6;i++){var a=Math.random()*Math.PI*2,sp=1+Math.random()*2;G.parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.5,life:1,d:.02+Math.random()*.02,c:c[Math.floor(Math.random()*c.length)],sz:2+Math.random()*3});}}
+function updP(){G.parts=G.parts.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.04;p.life-=p.d;return p.life>0;});}
+function drawP(gx){G.parts.forEach(function(p){gx.globalAlpha=p.life;gx.fillStyle=p.c;gx.beginPath();gx.arc(p.x,p.y,p.sz*p.life,0,Math.PI*2);gx.fill();});gx.globalAlpha=1;}
+function popText(x,y,txt,isBad){var gs=document.getElementById('gameScreen');var d=document.createElement('div');d.className=isBad?'dmg-pop':'money-pop';d.textContent=txt;var rect=document.getElementById('gameCanvas').getBoundingClientRect();d.style.left=(rect.left+x-30)+'px';d.style.top=(rect.top+y-40)+'px';gs.appendChild(d);setTimeout(function(){d.remove();},1200);}
+
+// ══════════════════════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════════════════════
+function interact(){if(!G.near||G.modalOpen||G.evOpen)return;SFX.click();({overtime:mOvertime1,overtime2:mOvertime2,overtime3:mOvertime3,freelance:mFreelance,sleep:mSleep,rest:mRest,coffee:mCoffee,doctor:mDoctor,exercise:mExercise,gaming:mGaming})[G.near.t]();}
+function talkToNpc(npc){if(G.modalOpen||G.evOpen)return;SFX.npcTalk();var adv=npc.advice[Math.floor(Math.random()*npc.advice.length)];showM('🗣 '+npc.name.toUpperCase(),'<p style="color:#8ab4f8;margin-bottom:8px">'+npc.name+' quay sang nói:</p><p style="font-style:italic;color:#ddd;font-size:14px">"'+adv+'"</p>'+(G.fatigue>60?'<div class="wbox">⚠ Mệt lắm rồi...</div>':'')+'<button class="bok teal" onclick="closeM()" style="margin-top:12px">👋 Cảm ơn</button>');}
+function mOvertime1(){if(!canWork())return;var e1=calcOT(.4),e2=calcOT(.8),e3=calcOT(1.2),e4=calcOT(1.6),e5=calcOT(2.1),e6=calcOT(2.7);showM('⏰ TĂNG CA','<div class="cg" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="cb" onclick="doOvertime('+Math.round(e1)+','+fatAmt(6)+',false,1)">1 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e1))+'</span><span class="cb-tag cb-bad">+'+fatAmt(6)+'% mệt</span></button><button class="cb" onclick="doOvertime('+Math.round(e2)+','+fatAmt(12)+',false,2)">2 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e2))+'</span><span class="cb-tag cb-bad">+'+fatAmt(12)+'% mệt</span></button><button class="cb" onclick="doOvertime('+Math.round(e3)+','+fatAmt(18)+',false,3)">3 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e3))+'</span><span class="cb-tag cb-bad">+'+fatAmt(18)+'% mệt</span></button><button class="cb" onclick="doOvertime('+Math.round(e4)+','+fatAmt(25)+',false,4)">4 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e4))+'</span><span class="cb-tag cb-bad">+'+fatAmt(25)+'% mệt</span></button><button class="cb" onclick="doOvertime('+Math.round(e5)+','+fatAmt(35)+',false,5)">5 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e5))+'</span><span class="cb-tag cb-bad">+'+fatAmt(35)+'% mệt</span></button><button class="cb" onclick="doOvertime('+Math.round(e6)+','+fatAmt(45)+',false,6)">6 tiếng<span class="cb-tag cb-good">+'+fmt(Math.round(e6))+'</span><span class="cb-tag cb-bad">+'+fatAmt(45)+'% mệt</span></button></div><button class="cb" onclick="closeM()" style="margin-top:6px;width:100%">🚪 Từ chối</button>');}
+function mOvertime2(){if(!canWork())return;var e1=calcOT(.8),e2=calcOT(1.5),e3=calcOT(2.2),e4=calcOT(3),e5=calcOT(15),e6=20000000;showM('💼 DỰ ÁN NGOÀI','<div class="cg" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="cb" onclick="doOvertime('+Math.round(e1)+','+fatAmt(8)+',false,2)">Dự án nhỏ<span class="cb-tag cb-good">+'+fmt(Math.round(e1))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(e2)+','+fatAmt(15)+',false,3)">Dự án địa phương<span class="cb-tag cb-good">+'+fmt(Math.round(e2))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(e3)+','+fatAmt(22)+',false,4)">Dự án trung bình<span class="cb-tag cb-good">+'+fmt(Math.round(e3))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(e4)+','+fatAmt(28)+',false,5)">Dự án nội địa<span class="cb-tag cb-good">+'+fmt(Math.round(e4))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(e5)+','+fatAmt(50)+',true,8,30)">Dự án lớn (8h)<span class="cb-tag cb-good">+'+fmt(Math.round(e5))+'</span><span class="cb-tag cb-bad">-30HP</span></button><button class="cb" onclick="doOvertime('+e6+',80,true,12,80)">Dự án quốc tế<span class="cb-tag cb-good">+'+fmt(e6)+'</span><span class="cb-tag cb-bad">-80HP</span></button></div><button class="cb" onclick="closeM()" style="width:100%;margin-top:6px">❌ Từ chối</button>');}
+function mOvertime3(){if(!canWork())return;var e1=calcOT(2.2),e2=calcOT(4.5),e3=calcOT(6);showM('🌙 LÀM QUA ĐÊM','<p>Nguy hiểm — thức đêm mất nhiều HP!</p>'+(G.fatigue>50?'<div class="wbox">⚠ Mệt >50% rồi!</div>':'')+'<div class="cg"><button class="cb" onclick="doOvertime('+Math.round(e1)+','+fatAmt(22)+',true,4)">Đến nửa đêm (4h)<span class="cb-tag cb-good">+'+fmt(Math.round(e1))+'</span><span class="cb-tag cb-bad">-10HP</span></button><button class="cb" onclick="doOvertime('+Math.round(e2)+','+fatAmt(45)+',true,7)">Thức trắng đêm (7h)<span class="cb-tag cb-good">+'+fmt(Math.round(e2))+'</span><span class="cb-tag cb-bad">-25HP</span></button><button class="cb" onclick="doOvertime('+Math.round(e3)+','+fatAmt(65)+',true,9)">Xuyên đêm (9h)<span class="cb-tag cb-good">+'+fmt(Math.round(e3))+'</span><span class="cb-tag cb-bad">-40HP</span></button><button class="cb" onclick="closeM()">😴 Thôi, đi ngủ</button></div>');}
+function mFreelance(){if(!canWork())return;var e=getEfficiency();showM('💻 FREELANCE','<div class="cg"><button class="cb" onclick="doOvertime('+Math.round(calcOT(1.8)*e)+','+fatAmt(12)+',false,3)">Code dạo (3h)<span class="cb-tag cb-good">+'+fmt(Math.round(calcOT(1.8)*e))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(calcOT(1)*e)+','+fatAmt(7)+',false,2)">Edit video (2h)<span class="cb-tag cb-good">+'+fmt(Math.round(calcOT(1)*e))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(calcOT(.5)*e)+','+fatAmt(4)+',false,1)">Thiết kế (1h)<span class="cb-tag cb-good">+'+fmt(Math.round(calcOT(.5)*e))+'</span></button><button class="cb" onclick="doOvertime('+Math.round(calcOT(2.5)*e)+','+fatAmt(28)+',true,6,10)">Khuân vác (6h)<span class="cb-tag cb-good">+'+fmt(Math.round(calcOT(2.5)*e))+'</span><span class="cb-tag cb-bad">-10HP</span></button><button class="cb" onclick="closeM()" style="width:100%">❌ Nghỉ ngơi</button></div>');}
+function doOvertime(earn,fat,overnight,hours,hpLoss){closeM();G.workingAnim=true;G.workAnimTimer=40;hours=hours||3;var ti=setInterval(function(){if(G.workAnimTimer>0)SFX.typing();else clearInterval(ti);},200);setTimeout(function(){G.workingAnim=false;G.money+=earn;G.fatigue=Math.min(100,G.fatigue+fat);if(overnight||hpLoss){var loss=hpLoss||(hours<=4?10:hours<=7?25:40);G.hp=Math.max(1,G.hp-loss);}drainEnergy(hours,overnight?1.5:1);updateGameTime(hours);spawnP(G.p.x,G.p.y,'money');popText(G.p.x,G.p.y,'+'+fmt(earn));SFX.bigcoin();checkDanger();if(G.fatigue>=100)triggerDeath('exhaustion');else checkWin();},800);}
+function mSleep(){showM('🛏 VỀ NHÀ NGỦ','<div class="cg"><button class="cb" onclick="doSleep(2)">Chợp mắt 2h<span class="cb-tag cb-good">-10% mệt | +3HP</span></button><button class="cb" onclick="doSleep(4)">Ngủ ít 4h<span class="cb-tag cb-good">-20% mệt | +7HP</span></button><button class="cb" onclick="doSleep(6)">Ngủ vừa 6h<span class="cb-tag cb-good">-35% mệt | +10HP</span></button><button class="cb" onclick="doSleep(8)">Ngủ đủ giấc 8h<span class="cb-tag cb-good">-50% mệt | +15HP | +⚡</span></button><button class="cb" onclick="closeM()">🔙 Thức tiếp</button></div>');}
+function doSleep(h){closeM();var fr=h===2?10:h===4?20:h===6?35:50,hg=h===2?3:h===4?7:h===6?10:15;G.fatigue=Math.max(0,G.fatigue-fr);G.hp=Math.min(100,G.hp+hg);if(h>=6){G.sleptYesterday=true;G.hoursAwake=0;}recoverEnergy(h,1.2);SFX.sleep();popText(G.p.x,G.p.y,'ZZZ... -'+fr+'%');updateGameTime(h);checkDanger();}
+function mRest(){showM('🧘 NGHỈ NGƠI','<div class="cg"><button class="cb" onclick="doRest(2)">Nghỉ 2h<span class="cb-tag cb-good">-20% mệt | +5HP</span></button><button class="cb" onclick="doRest(4)">Nghỉ 4h<span class="cb-tag cb-good">-40% mệt | +10HP</span></button><button class="cb" onclick="doRest(6)">Nghỉ 6h<span class="cb-tag cb-good">-60% mệt | +15HP</span></button><button class="cb" onclick="doRest(24)">Nghỉ 1 ngày<span class="cb-tag cb-good">Phục hồi hoàn toàn</span></button><button class="cb" onclick="closeM()">🔙 Làm tiếp</button></div>');}
+function doRest(h){closeM();var fr=h===2?20:h===4?40:h===6?60:100,hg=h===2?5:h===4?10:h===6?15:50;G.fatigue=Math.max(0,G.fatigue-fr);G.hp=Math.min(100,G.hp+hg);recoverEnergy(h>=24?8:h,.8);if(h>=24){G.sleptYesterday=true;G.hoursAwake=0;}updateGameTime(h);popText(G.p.x,G.p.y,'-'+fr+'% mệt | '+h+'h');SFX.sleep();checkDanger();}
+function mCoffee(){showM('🍽 QUÁN ĂN','<div class="cg"><button class="cb" onclick="doDrink(\'coffee\')">☕ Cà phê<span class="cb-tag cb-good">-15% mệt | +15⚡</span><span class="cb-tag cb-cost">-'+fmt(50000*(1+G.coffeeToday))+'</span>'+(G.coffeeToday>=3?'<span class="cb-tag cb-bad">-10HP</span>':'')+'</button><button class="cb" onclick="doDrink(\'milktea\')">🧋 Trà sữa<span class="cb-tag cb-good">-10% mệt | +3HP</span><span class="cb-tag cb-cost">-65K đ</span></button><button class="cb" onclick="doDrink(\'water\')">💧 Nước lọc<span class="cb-tag cb-good">-5% mệt | +5⚡</span><span style="color:#4ecdc4;font-size:10px;display:block;margin-top:4px">MIỄN PHÍ</span></button><button class="cb" onclick="doDrink(\'pho\')">🍲 Phở<span class="cb-tag cb-good">+25HP | +20⚡</span><span class="cb-tag cb-cost">-60K đ</span></button><button class="cb" onclick="doDrink(\'chicken\')">🍗 Gà rán<span class="cb-tag cb-good">+20HP | +25⚡</span><span class="cb-tag cb-cost">-80K đ</span></button><button class="cb" onclick="doDrink(\'pizza\')">🍕 Pizza<span class="cb-tag cb-good">+35HP | +40⚡</span><span class="cb-tag cb-cost">-150K đ</span></button><button class="cb" onclick="closeM()" style="width:100%">🚫 Không ăn gì</button></div>');}
+function doDrink(type){closeM();var drinks={coffee:{cost:50000*(1+G.coffeeToday),fat:-15,hp:(G.coffeeToday>=3?-10:0),en:15,isCoffee:true,ico:'☕'},milktea:{cost:65000,fat:-10,hp:3,en:10,ico:'🧋'},water:{cost:0,fat:-5,hp:0,en:5,ico:'💧'},pho:{cost:60000,fat:4,hp:25,en:20,ico:'🍲'},chicken:{cost:80000,fat:5,hp:20,en:25,ico:'🍗'},pizza:{cost:150000,fat:8,hp:35,en:40,ico:'🍕'}};var d=drinks[type];if(!d)return;if(d.cost>0&&G.money<d.cost){showM('💸 Không đủ tiền','<button class="bok" onclick="closeM()">OK</button>');return;}if(d.cost>0)G.money=Math.max(0,G.money-d.cost);G.fatigue=Math.max(0,Math.min(100,G.fatigue+d.fat));G.energy=Math.min(100,G.energy+d.en);G.hp=Math.max(1,Math.min(100,G.hp+d.hp));if(d.isCoffee)G.coffeeToday++;updateGameTime(1);popText(G.p.x,G.p.y,d.ico+(d.cost>0?' -'+fmt(d.cost):' FREE'));SFX.coffee();if(G.hp<=0)triggerDeath('overdose');checkDanger();}
+function mDoctor(){var c=Math.round((200000+G.level*100000)*getDiff().gm);showM('🏥 KHÁM BỆNH','<div class="gbox"><p>💡 Đặt lịch khám trước để tiết kiệm thời gian!</p></div><div class="cg"><button class="cb" onclick="doDoctor('+Math.round(c*.4)+',20,10,1)">Khám nhanh<span class="cb-tag cb-good">+20HP | -10% mệt</span><span class="cb-tag cb-cost">-'+fmt(Math.round(c*.4))+'</span></button><button class="cb" onclick="doDoctor('+c+',50,20,2)">Khám cơ bản<span class="cb-tag cb-good">+50HP | -20% mệt</span><span class="cb-tag cb-cost">-'+fmt(c)+'</span></button><button class="cb" onclick="doDoctor('+Math.round(c*2.2)+',100,35,4)">Khám toàn diện<span class="cb-tag cb-good">+100HP | -35% mệt</span><span class="cb-tag cb-cost">-'+fmt(Math.round(c*2.2))+'</span></button></div><button class="bok teal" onclick="closeM();showBookAppointment()" style="width:100%;margin-top:8px">📅 Đặt lịch khám cho mình / gia đình</button><button class="cb" onclick="closeM()" style="width:100%;margin-top:6px">🔙 Để sau</button>');}
+function showBookAppointment(){showM('📅 ĐẶT LỊCH KHÁM','<div class="ai-field" style="margin-bottom:8px"><label style="color:rgba(0,212,180,.5);font-size:9px;letter-spacing:2px">NGƯỜI KHÁM</label><select class="fam-inp" id="appt_who" style="width:100%;background:#050a12;border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-size:12px;padding:7px;border-radius:4px;outline:none"><option>Minh (bản thân)</option>'+FAM_MEMBERS.map(function(m){return'<option>'+m.emoji+' '+m.name+' ('+m.relation+')</option>';}).join('')+'</select></div><div class="fam-inp-row" style="margin-bottom:8px"><div style="flex:1"><label style="color:rgba(0,212,180,.5);font-size:9px;display:block;margin-bottom:4px">NGÀY KHÁM</label><input type="date" class="fam-inp" id="appt_date" style="background:#050a12;border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-size:11px;padding:6px;border-radius:4px;width:100%;outline:none"></div><div style="flex:1"><label style="color:rgba(0,212,180,.5);font-size:9px;display:block;margin-bottom:4px">GIỜ KHÁM</label><input type="time" class="fam-inp" id="appt_time" value="09:00" style="background:#050a12;border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-size:11px;padding:6px;border-radius:4px;width:100%;outline:none"></div></div><div style="margin-bottom:8px"><label style="color:rgba(0,212,180,.5);font-size:9px;display:block;margin-bottom:4px">CHUYÊN KHOA</label><select class="fam-inp" id="appt_type" style="width:100%;background:#050a12;border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-size:11px;padding:6px;border-radius:4px;outline:none"><option>🫀 Tim mạch</option><option>🧠 Thần kinh</option><option>🦷 Răng hàm mặt</option><option>👁 Mắt</option><option>🩺 Tổng quát</option><option>🦴 Cơ xương khớp</option><option>💊 Nội tiết / Tiểu đường</option></select></div><div style="margin-bottom:8px"><label style="color:rgba(0,212,180,.5);font-size:9px;display:block;margin-bottom:4px">GHI CHÚ</label><input class="fam-inp" id="appt_note" placeholder="VD: Kiểm tra huyết áp định kỳ" style="width:100%;background:#050a12;border:1px solid rgba(0,212,180,.2);color:#c0e0d8;font-size:11px;padding:6px;border-radius:4px;outline:none"></div><div style="display:flex;gap:8px;margin-top:12px"><button class="bok teal" onclick="confirmAppointment()" style="flex:1">✅ Đặt lịch</button><button class="bok" onclick="closeM()" style="background:#1a1a2a;flex:1;border:1px solid #333">Huỷ</button></div>');}
+function confirmAppointment(){var who=document.getElementById('appt_who').value;var date=document.getElementById('appt_date').value;var time=document.getElementById('appt_time').value;var type=document.getElementById('appt_type').value;if(!date){showToast('⚠ Chọn ngày khám!','red');return;}SFX.win();closeM();showToast('📅 Đã đặt lịch '+type+' cho '+who+' vào '+(date||'sắp tới')+' lúc '+time+'!');}
+function mExercise(){showM('🏋 TẬP THỂ DỤC','<div class="cg"><button class="cb" onclick="doExercise(.5)">30 phút<span class="cb-tag cb-good">+5HP | -8% mệt</span></button><button class="cb" onclick="doExercise(1)">1 tiếng<span class="cb-tag cb-good">+12HP | -16% mệt</span></button><button class="cb" onclick="doExercise(1.5)">1.5 tiếng<span class="cb-tag cb-good">+18HP | -22% mệt</span></button><button class="cb" onclick="doExercise(2)">2 tiếng<span class="cb-tag cb-good">+25HP | -30% mệt</span></button><button class="cb" onclick="closeM()">🔙 Không tập</button></div>');}
+function doExercise(intensity){closeM();var h=intensity<=1?1:2,hg=Math.round(5+intensity*10),fr=Math.round(8+intensity*11),ed=Math.round(5+intensity*8.5);G.hp=Math.min(100,G.hp+hg);G.fatigue=Math.max(0,G.fatigue-fr);G.energy=Math.max(0,G.energy-ed);updateGameTime(h);popText(G.p.x,G.p.y,'+'+hg+'HP 🏋 '+(intensity*60)+'min');SFX.win();checkDanger();}
+function mGaming(){showM('🎮 CHƠI GAME','<div class="cg"><button class="cb" onclick="doGaming(.5)">30 phút<span class="cb-tag cb-good">-5% mệt</span></button><button class="cb" onclick="doGaming(1)">1 tiếng<span class="cb-tag cb-good">-12% mệt</span></button><button class="cb" onclick="doGaming(2)">2 tiếng<span class="cb-tag cb-good">-22% mệt</span></button><button class="cb" onclick="doGaming(3)">3 tiếng<span class="cb-tag cb-good">-30% mệt</span></button><button class="cb" onclick="closeM()">🔙 Thôi</button></div>');}
+function doGaming(hrs){closeM();var h=Math.ceil(hrs),fr=hrs===.5?5:hrs===1?12:hrs===2?22:30,hg=hrs===.5?2:hrs===1?4:hrs===2?6:8;G.fatigue=Math.max(0,G.fatigue-fr);G.hp=Math.min(100,G.hp+hg);recoverEnergy(h,.3);updateGameTime(h);popText(G.p.x,G.p.y,'-'+fr+'% mệt 🎮');SFX.sleep();checkDanger();}
+function doDoctor(cost,hpGain,fatReduce,hours){closeM();if(G.money<cost){showM('💸 Không đủ tiền','<button class="bok" onclick="closeM()">OK</button>');return;}G.money=Math.max(0,G.money-cost);G.hp=Math.min(100,G.hp+hpGain);G.fatigue=Math.max(0,G.fatigue-fatReduce);recoverEnergy(hours,.5);updateGameTime(hours);spawnP(G.p.x,G.p.y,'money');popText(G.p.x,G.p.y,'+'+hpGain+'HP -'+fmt(cost));SFX.win();checkDanger();}
+
+// ══════════════════════════════════════════════════════════
+// DANGER / WIN / DEATH
+// ══════════════════════════════════════════════════════════
+function checkDanger(){var v=document.getElementById('vig');if(G.fatigue>=90||G.hp<=15){v.className='vig vc';startAlarm();startAmbient('tense');}else if(G.fatigue>=70||G.hp<=35){v.className='vig vh';stopAlarm();SFX.warn();}else{v.className='vig';stopAlarm();stopHeartbeat();}document.getElementById('hwarn').classList[G.fatigue>=70||G.hp<=35?'add':'remove']('on');}
+function checkWin(){if(G.money<G.goal)return;stopAlarm();stopHeartbeat();SFX.win();var lvs=getLvs(),next=G.level+1;if(next>=lvs.length){showM('🏆 HOÀN THÀNH!','<div class="gbox" style="text-align:center"><p style="font-size:18px;font-weight:900;color:#ffd700">🎉 Minh đã vượt qua tất cả!</p></div><div class="pbox"><p>💌 Đừng quên nhắn tin hỏi thăm ba mẹ nhé!</p></div><button class="bok gold" onclick="backToMenu()">🏠 Menu</button><button class="bok pink" onclick="backToMenu();setTimeout(openFamily,200)" style="margin-left:8px">💌 Nhắn gia đình</button>');}else{G.level=next;var lv=lvs[next];G.goal=lv.goal;G.maxDays=lv.days;G.hp=Math.max(45,G.hp);G.fatigue=Math.min(55,G.fatigue);G.day=1;G.hour=6;G.energy=Math.max(50,G.energy);G.hoursAwake=0;G.money=0;G.coffeeToday=0;G.timeUpdating=false;resetLvEvents(lv.story);showM('✅ MỤC TIÊU HOÀN THÀNH!','<div class="gbox"><p style="font-size:15px;font-weight:900;color:#ffd700">Chương '+G.level+' hoàn thành!</p></div><button class="bok gold" onclick="goNextLevel()">▶ CHƯƠNG TIẾP →</button>');}}
+function goNextLevel(){closeM();var lvs=getLvs();showStoryScreen(STORIES[lvs[G.level].story],lvs[G.level]);}
+function triggerDeath(cause){stopAlarm();stopHeartbeat();SFX.death();document.getElementById('vig').className='vig vc';var msgs={exhaustion:{t:'💀 GỤC NGÃ VÌ KIỆT SỨC',b:'Minh ngã xuống tại bàn làm việc lúc 2 giờ sáng.'},overdose:{t:'💀 QUÁ LIỀU CAFFEINE',b:'Tim đập loạn nhịp. 6 ly cà phê sau 40 tiếng không ngủ.'}};var m=msgs[cause]||msgs.exhaustion;showM(m.t,'<div class="wbox"><p>'+m.b+'</p></div><p>Còn thiếu: <b style="color:#ffd700">'+fmt(Math.max(0,G.goal-G.money))+'</b></p><div style="display:flex;gap:8px;margin-top:12px"><button class="bok" onclick="replayLevel()" style="flex:1">🔄 Chơi lại</button><button class="bok" style="background:#333;flex:1" onclick="backToMenu()">🏠 Menu</button></div>');}
+function triggerFail(){stopAlarm();stopHeartbeat();SFX.death();showM('⏰ HẾT THỜI GIAN','<div class="wbox" style="text-align:center"><p>Kiếm được <b style="color:#ffd700">'+fmt(G.money)+'</b> / <b>'+fmt(G.goal)+'</b></p></div><div style="display:flex;gap:8px;margin-top:12px"><button class="bok" onclick="replayLevel()" style="flex:1">🔄 Chơi lại</button><button class="bok" style="background:#333;flex:1" onclick="backToMenu()">🏠 Menu</button></div>');}
+function replayLevel(){closeM();var lvs=getLvs(),lv=lvs[G.level];G.day=1;G.hour=6;G.energy=100;G.hoursAwake=0;G.money=0;G.hp=100;G.fatigue=0;G.coffeeToday=0;G.sleptYesterday=false;G.timeUpdating=false;G.goal=lv.goal;G.maxDays=lv.days;document.getElementById('vig').className='vig';resetLvEvents(lv.story);initWorld();showStoryScreen(STORIES[lv.story],lv);}
+
+// ══════════════════════════════════════════════════════════
+// HUD
+// ══════════════════════════════════════════════════════════
+function updateHUD(){var lvs=getLvs();document.getElementById('dayNum').textContent=G.day;document.getElementById('lvlNum').textContent=G.level+1;document.getElementById('diffLbl').textContent=DIFF_MAP[CFG.diff].label;document.getElementById('hourDisp').textContent=formatHour(G.hour);document.getElementById('enV').textContent=Math.round(G.energy)+'%';document.getElementById('enB').style.width=G.energy+'%';document.getElementById('hpV').textContent=Math.round(G.hp)+'%';document.getElementById('faV').textContent=Math.round(G.fatigue)+'%';document.getElementById('hpB').style.width=G.hp+'%';document.getElementById('faB').style.width=G.fatigue+'%';document.getElementById('slH').textContent=G.sleptYesterday?'Đủ giấc':'Chưa ngủ';document.getElementById('cfH').textContent=G.coffeeToday+' ly';document.getElementById('moneyV').textContent=fmt(G.money);document.getElementById('moneyGoal').textContent='Mục tiêu: '+fmt(G.goal)+' (còn '+Math.max(0,G.maxDays-G.day+1)+' ngày)';document.getElementById('moneyFill').style.width=Math.min(100,G.money/G.goal*100)+'%';var rk=document.getElementById('rkH'),em=document.getElementById('emH');if(G.fatigue>=85||G.hp<=15){rk.textContent='NGUY HIỂM';rk.style.color='#ff3333';em.textContent='💀';}else if(G.fatigue>=70||G.hp<=30){rk.textContent='CẦN CẨN THẬN';rk.style.color='#ff8800';em.textContent='😨';}else if(G.fatigue>=50||G.hp<=60){rk.textContent='MỆT';rk.style.color='#ffd700';em.textContent='😩';}else{rk.textContent='BÌNH THƯỜNG';rk.style.color='#4ecdc4';em.textContent='😊';}if(G.hp<=10)startHeartbeat();var tip=document.getElementById('itip');if(G.nearNpc){tip.classList.add('on');tip.textContent='[ E ] Nói chuyện với '+G.nearNpc.name;}else if(G.near){tip.classList.add('on');tip.textContent='[ E ] '+G.near.lbl+' ('+G.near.desc+')';}else tip.classList.remove('on');}
+
+// ══════════════════════════════════════════════════════════
+// GAME LOOP + RENDER
+// ══════════════════════════════════════════════════════════
+var gc=document.getElementById('gameCanvas'),gx=gc.getContext('2d');
+function gameLoop(){if(G.scr!=='game')return;updPlayer();updNPCs();updP();chkNear();render();G._raf=requestAnimationFrame(gameLoop);}
+var lstStep=0;
+function updPlayer(){var p=G.p,dx=0,dy=0;if(G.keys['w']||G.keys['arrowup'])dy=-p.spd;if(G.keys['s']||G.keys['arrowdown'])dy=p.spd;if(G.keys['a']||G.keys['arrowleft'])dx=-p.spd;if(G.keys['d']||G.keys['arrowright'])dx=p.spd;if(dx&&dy){dx*=.707;dy*=.707;}p.moving=!!(dx||dy);var px=p.x,py=p.y;p.x=Math.max(20,Math.min(980,p.x+dx));p.y=Math.max(110,Math.min(600,p.y+dy));G.objs.forEach(function(o){if(col4(p.x-p.sz,p.y-p.sz,p.sz*2,p.sz*2,o.x-o.w/2,o.y-o.h/2,o.w,o.h)){p.x=px;p.y=py;}});if(p.moving){var n=Date.now();if(n-lstStep>380)lstStep=n;}}
+function updNPCs(){G.npcs.forEach(function(n){if(Math.random()<.008){n.tx=Math.max(80,Math.min(920,n.x+(Math.random()-.5)*60));n.ty=Math.max(120,Math.min(580,n.y+(Math.random()-.5)*60));}if(n.tx){var dx=n.tx-n.x,dy=n.ty-n.y,d=Math.hypot(dx,dy);if(d>2){n.x+=dx/d*n.spd;n.y+=dy/d*n.spd;}else{n.tx=null;n.ty=null;}}});}
+function chkNear(){var p=G.p,nr=null,mn=Infinity;G.objs.forEach(function(o){var d=Math.hypot(p.x-o.x,p.y-o.y);if(d<90&&d<mn){mn=d;nr=o;}});G.near=nr;var nnpc=null,mnpc=Infinity;G.npcs.forEach(function(n){var d=Math.hypot(p.x-n.x,p.y-n.y);if(d<60&&d<mnpc){mnpc=d;nnpc=n;}});G.nearNpc=nnpc;}
+function col4(x1,y1,w1,h1,x2,y2,w2,h2){return x1<x2+w2&&x1+w1>x2&&y1<y2+h2&&y1+h1>y2;}
+function ltn(h,a){var r=Math.min(255,parseInt(h.slice(1,3),16)+a),g2=Math.min(255,parseInt(h.slice(3,5),16)+a),b=Math.min(255,parseInt(h.slice(5,7),16)+a);return'rgb('+r+','+g2+','+b+')';}
+function drawBox3D(x,y,w,h,d,topC,frontC,sideC){gx.fillStyle=frontC;gx.fillRect(x,y-d,w,h);gx.fillStyle=topC;gx.fillRect(x,y-d-4,w,4);gx.fillStyle=sideC;gx.fillRect(x+w-3,y-d,3,h);}
+function px3d(x,y,sz,d,col){var r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);drawBox3D(x,y,sz,d,0,'rgb('+(Math.min(255,r+35))+','+(Math.min(255,g+35))+','+(Math.min(255,b+35))+')',col,'rgb('+(Math.max(0,r-20))+','+(Math.max(0,g-20))+','+(Math.max(0,b-20))+')');}
+function drawFloor(){var t=Date.now()/1000;var rooms=[{x:0,y:100,w:500,h:260,f1:'#1e2838',f2:'#1a2430',label:'📋 VĂN PHÒNG',lc:'rgba(122,173,255,.7)',wc:'#283850'},{x:500,y:100,w:500,h:260,f1:'#242038',f2:'#1e1c30',label:'🌙 KHU LÀM ĐÊM',lc:'rgba(160,150,255,.7)',wc:'#302848'},{x:0,y:360,w:500,h:260,f1:'#1c2a2c',f2:'#182428',label:'🛏 KHU NGHỈ NGƠI',lc:'rgba(80,220,210,.7)',wc:'#1e3838'},{x:500,y:360,w:500,h:260,f1:'#28221c',f2:'#221c18',label:'☕ CAFÉ & Y TẾ',lc:'rgba(255,190,90,.7)',wc:'#3a2e1e'}];
+rooms.forEach(function(r){for(var y=r.y;y<r.y+r.h;y+=36)for(var x=r.x;x<r.x+r.w;x+=36){gx.fillStyle=((Math.floor(x/36)+Math.floor((y-100)/36))%2===0)?r.f1:r.f2;gx.fillRect(x,y,36,36);}px3d(r.x,r.y+8,r.w,8,r.wc);drawBox3D(r.x+10,r.y+20,140,18,3,ltn(r.wc,20),ltn(r.wc,10),ltn(r.wc,-10));gx.font='bold 10px Inter,sans-serif';gx.fillStyle=r.lc;gx.textAlign='left';gx.textBaseline='middle';gx.fillText(r.label,r.x+16,r.y+25);});
+px3d(496,108,8,512,'#2a3448');px3d(0,366,1000,8,'#2a3448');
+gx.fillStyle='#1a2430';gx.fillRect(455,362,90,8);gx.fillRect(496,300,8,60);
+gx.fillStyle='#0c1018';gx.fillRect(0,0,1000,100);
+for(var i=0;i<7;i++){var lx=70+i*130,pulse=.2+Math.sin(t*.5+i)*.06;var lg=gx.createLinearGradient(lx,0,lx,100);lg.addColorStop(0,'rgba(200,230,255,'+pulse+')');lg.addColorStop(1,'transparent');gx.fillStyle=lg;gx.fillRect(lx-50,0,100,100);drawBox3D(lx-36,14,72,6,2,'#ddeeff','#aabbcc','#8899aa');}
+[130,350,650,870].forEach(function(cx){var cy=195;drawBox3D(cx-35,cy+8,70,20,0,'#3a3020','#2a2218','#1e180e');drawBox3D(cx-35,cy,70,6,2,'#4a3a28','#3a2e1e','#2e2214');drawBox3D(cx-14,cy-20,28,18,3,'#222','#111','#0a0a0a');gx.fillStyle=Math.sin(t*2+cx)>.5?'rgba(80,170,255,.5)':'rgba(60,140,220,.35)';gx.fillRect(cx-11,cy-18,22,13);});
+var bx=160,by=435;drawBox3D(bx-38,by-14,76,40,6,'#2a2a5a','#1a1a3a','#14142a');drawBox3D(bx-38,by-18,76,6,8,'#3a3a6a','#2a2a5a','#1e1e4a');
+var sx=370,sy=435;drawBox3D(sx-32,sy,64,22,4,'#2a4a2a','#1a2a1a','#14201a');drawBox3D(sx-36,sy-6,8,28,6,'#1e3a1e','#1a2a1a','#142014');drawBox3D(sx+28,sy-6,8,28,6,'#1e3a1e','#1a2a1a','#142014');
+var cofX=640,cofY=435;drawBox3D(cofX-18,cofY-28,36,42,6,'#3a2a1a','#2a1a0a','#1e1208');gx.fillStyle='#ffd700';gx.beginPath();gx.arc(cofX,cofY-16,4,0,Math.PI*2);gx.fill();
+var medX=870,medY=435;drawBox3D(medX-20,medY-22,40,38,6,'#f0f0f0','#e0e0e0','#c8c8c8');gx.strokeStyle='#e63946';gx.lineWidth=2.5;gx.beginPath();gx.moveTo(medX,medY-16);gx.lineTo(medX,medY+2);gx.stroke();gx.beginPath();gx.moveTo(medX-9,medY-7);gx.lineTo(medX+9,medY-7);gx.stroke();
+for(var j=0;j<4;j++){var wx=80+j*240,sky=gx.createLinearGradient(wx,22,wx,84);sky.addColorStop(0,'#0c1428');sky.addColorStop(1,'#1e2e42');gx.fillStyle=sky;gx.fillRect(wx+2,24,116,58);gx.fillStyle='#081018';for(var b=0;b<6;b++){var bx2=wx+4+b*19,bh=9+Math.sin(b*1.7+j)*13;px3d(bx2,82,13,bh,'#0a1218');for(var wl=0;wl<3;wl++){if(Math.sin(t*.1+b*3+wl*7+j*5)>.2){gx.fillStyle='rgba(255,220,120,.6)';gx.fillRect(bx2+3,82-bh+4+wl*5,5,3);}}}gx.strokeStyle='#2a4058';gx.lineWidth=2;gx.strokeRect(wx,22,120,62);}}
+function drawObjs(){G.objs.forEach(function(o){var isNear=G.near===o,isEarn=~['overtime','overtime2','overtime3','freelance'].indexOf(o.t);gx.fillStyle='rgba(0,0,0,.25)';gx.fillRect(o.x-o.w/2+4,o.y+o.h/2+2,o.w,4);if(isNear){gx.shadowColor=isEarn?'rgba(255,215,0,.7)':'rgba(0,220,190,.5)';gx.shadowBlur=24;}drawBox3D(o.x-o.w/2,o.y+o.h/2,o.w,o.h,5,ltn(o.col,30),o.col,ltn(o.col,-15));gx.shadowBlur=0;gx.shadowColor='transparent';gx.strokeStyle=isNear?(isEarn?'rgba(255,215,0,.9)':'rgba(0,220,190,.8)'):'rgba(255,255,255,.1)';gx.lineWidth=isNear?2.5:1;gx.strokeRect(o.x-o.w/2,o.y-o.h/2-5,o.w,o.h+5);gx.font='28px Arial';gx.textAlign='center';gx.textBaseline='middle';gx.fillText(o.ic,o.x,o.y-3);gx.font='bold 10px Inter,sans-serif';gx.fillStyle='#fff';gx.shadowColor='rgba(0,0,0,.8)';gx.shadowBlur=4;gx.fillText(o.lbl,o.x,o.y+o.h/2-7);gx.shadowBlur=0;gx.shadowColor='transparent';});}
+function drawChar(cx,cy,sz,col,moving,isP,fatigue,hp){var t=Date.now()/1000,by=moving?Math.sin(t*8)*2:0;cy+=by;var tired=fatigue>60,critical=fatigue>85||hp<20,tilt=critical?Math.sin(t*3)*.07:tired?Math.sin(t*1.5)*.03:0;gx.fillStyle='rgba(0,0,0,.3)';gx.beginPath();gx.ellipse(cx,cy+sz+2,sz*.5,sz*.15,0,0,Math.PI*2);gx.fill();var lg=moving?Math.sin(t*10)*(sz*.2):0;px3d(cx-sz*.2+lg,cy+sz*.4,sz*.18,sz*.5,'#1a2030');px3d(cx+sz*.04-lg,cy+sz*.4,sz*.18,sz*.5,'#1a2030');px3d(cx-sz*.22+lg,cy+sz*.85,sz*.22,sz*.1,'#111');px3d(cx+sz*.02-lg,cy+sz*.85,sz*.22,sz*.1,'#111');gx.save();gx.translate(cx,cy);gx.rotate(tilt);drawBox3D(-sz*.35,-sz*.2,sz*.7,sz*.65,5,ltn(col,20),col,ltn(col,-15));gx.restore();var as=moving?Math.sin(t*10)*(sz*.18):0;px3d(cx-sz*.52+as,cy-sz*.12,sz*.16,sz*.45,col);px3d(cx+sz*.36-as,cy-sz*.12,sz*.16,sz*.45,col);var headC=critical?'#c06050':tired?'#b08060':'#d4956a';gx.save();gx.translate(cx,cy-sz*.56);gx.rotate(tilt);drawBox3D(-sz*.26,-sz*.26,sz*.52,sz*.52,6,ltn(headC,20),headC,ltn(headC,-15));drawBox3D(-sz*.27,-sz*.32,sz*.54,sz*.14,7,'#4a2810','#3a2010','#2a1808');var eyeH=critical?sz*.03:tired?sz*.04:sz*.09;gx.fillStyle='#fff';gx.beginPath();gx.ellipse(-sz*.1,-sz*.08,sz*.08,eyeH,0,0,Math.PI*2);gx.fill();gx.beginPath();gx.ellipse(sz*.1,-sz*.08,sz*.08,eyeH,0,0,Math.PI*2);gx.fill();gx.fillStyle=critical?'#ff3333':tired?'#c06060':'#1a1a2a';gx.beginPath();gx.arc(-sz*.1,-sz*.08,sz*.045,0,Math.PI*2);gx.fill();gx.beginPath();gx.arc(sz*.1,-sz*.08,sz*.045,0,Math.PI*2);gx.fill();gx.strokeStyle=critical?'#cc3333':tired?'#aa7760':'#8a6a4a';gx.lineWidth=1.4;gx.beginPath();critical?(gx.moveTo(-sz*.12,sz*.1),gx.quadraticCurveTo(0,sz*.04,sz*.12,sz*.1)):(gx.moveTo(-sz*.11,sz*.07),gx.quadraticCurveTo(0,sz*.14,sz*.11,sz*.07));gx.stroke();if(isP){gx.fillStyle='#8b1a1a';gx.beginPath();gx.moveTo(-sz*.06,-sz*.18);gx.lineTo(0,sz*.2);gx.lineTo(sz*.06,-sz*.18);gx.closePath();gx.fill();}gx.restore();if(isP){var bw2=sz*2.8,bx3=cx-bw2/2,by3=cy-sz*1.5;drawBox3D(bx3,by3+4,bw2,4,1,'#222','#111','#0a0a0a');var hpC=G.hp>60?'#4ecdc4':G.hp>30?'#ffd700':'#ff3333';drawBox3D(bx3,by3+4,bw2*(G.hp/100),4,1,ltn(hpC,20),hpC,ltn(hpC,-15));}}
+function render(){var sx=0,sy=0;if(G.shake>0){sx=(Math.random()-.5)*G.shake;sy=(Math.random()-.5)*G.shake;G.shake*=.85;}gx.save();gx.translate(sx,sy);gx.clearRect(-10,-10,1020,640);drawFloor();drawObjs();G.npcs.forEach(function(n){drawChar(n.x,n.y,16,n.col,!!n.tx,false,20,100);gx.font='bold 10px Inter,sans-serif';gx.textAlign='center';gx.textBaseline='bottom';gx.shadowColor='rgba(0,0,0,.7)';gx.shadowBlur=3;gx.fillStyle=G.nearNpc===n?'#fff':'rgba(200,200,255,.5)';gx.fillText(n.name,n.x,n.y-28);if(G.nearNpc===n){gx.strokeStyle='rgba(100,180,255,.3)';gx.lineWidth=1;gx.setLineDash([3,4]);gx.beginPath();gx.arc(n.x,n.y,40,0,Math.PI*2);gx.stroke();gx.setLineDash([]);}gx.shadowBlur=0;gx.shadowColor='transparent';});drawChar(G.p.x,G.p.y,G.p.sz,'#2a5a9a',G.p.moving,true,G.fatigue,G.hp);drawP(gx);if(G.near){gx.strokeStyle='rgba(255,215,0,.25)';gx.lineWidth=1;gx.setLineDash([4,6]);gx.beginPath();gx.arc(G.near.x,G.near.y,88,0,Math.PI*2);gx.stroke();gx.setLineDash([]);}if(G.fatigue>=80){var a2=((G.fatigue-80)/20)*Math.abs(Math.sin(Date.now()/500))*.15;gx.fillStyle='rgba(200,0,0,'+a2+')';gx.fillRect(0,0,1000,620);}if(G.workingAnim){G.workAnimTimer--;var wa=.6+Math.sin(Date.now()/200)*.2;gx.fillStyle='rgba(0,0,0,'+(.3*wa)+')';gx.fillRect(0,0,1000,620);gx.font='bold 18px Courier New';gx.textAlign='center';gx.textBaseline='middle';gx.fillStyle='rgba(255,215,0,'+wa+')';gx.fillText('⌨ ĐANG LÀM VIỆC...',500,310);}gx.restore();}
+
+// ══════════════════════════════════════════════════════════
+// MODAL / MISC
+// ══════════════════════════════════════════════════════════
+function showM(t,c){G.modalOpen=true;document.getElementById('mbox').innerHTML='<h2>'+t+'</h2>'+c;document.getElementById('movl').classList.add('on');}
+function closeM(){G.modalOpen=false;document.getElementById('movl').classList.remove('on');}
+function continueGame(){SFX.click();if(G.day>1)go('game');else openStory();}
+function showHighscore(){SFX.click();showM('🏆 BEST RUNS','<div class="ibox"><p>Chưa có dữ liệu. Hãy hoàn thành một ván!</p></div><button class="bok" onclick="closeM()">OK</button>');}
+
+// ══════════════════════════════════════════════════════════
+// WEBCAM
+// ══════════════════════════════════════════════════════════
+var camStream=null;
+function startCam(){document.getElementById('camStartBtn').style.display='none';document.getElementById('camCaptured').style.display='none';document.getElementById('camPreview').style.display='block';navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}}).then(function(s){camStream=s;document.getElementById('camVideo').srcObject=s;}).catch(function(err){document.getElementById('camPreview').style.display='none';document.getElementById('camStartBtn').style.display='inline-block';alert('Không mở được camera: '+err.message);});}
+function capturePhoto(){var video=document.getElementById('camVideo'),canvas=document.createElement('canvas');canvas.width=video.videoWidth||320;canvas.height=video.videoHeight||240;canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);document.getElementById('camPhoto').src=canvas.toDataURL('image/jpeg',.8);document.getElementById('camPreview').style.display='none';document.getElementById('camCaptured').style.display='block';stopCamStream();}
+function stopCam(){document.getElementById('camPreview').style.display='none';document.getElementById('camStartBtn').style.display='inline-block';stopCamStream();}
+function stopCamStream(){if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;}}
+
+// ══════════════════════════════════════════════════════════
+// VALIDATION
+// ══════════════════════════════════════════════════════════
+var VALIDATION_RULES={age:{min:1,max:120,messages:{nan:'⚠ Vui lòng nhập số tuổi!',empty:'⚠ Tuổi không được để trống!',tooLow:function(v){return v<=0?'⚠ Tuổi không thể âm hoặc bằng 0!':'⚠ Tuổi tối thiểu là 1!';},tooHigh:function(v){return v>200?'⚠ '+v+' tuổi?! Không ai sống lâu đến vậy 😅':'⚠ Tuổi tối đa là 120!';},ok:function(v){return v>=100?'✓ Hợp lệ (tuổi thọ đáng nể!)':'✓ Hợp lệ';}}},bmi:{min:10,max:80,messages:{nan:'⚠ Vui lòng nhập chỉ số BMI!',empty:'⚠ BMI không được để trống!',tooLow:function(){return'⚠ BMI tối thiểu hợp lệ là 10!';},tooHigh:function(){return'⚠ BMI tối đa ghi nhận là ~80!';},ok:function(v){return v<18.5?'✓ Hợp lệ (thiếu cân)':v<=24.9?'✓ Hợp lệ (bình thường 👍)':v<=29.9?'✓ Hợp lệ (thừa cân)':'✓ Hợp lệ (béo phì)';}}},sleep:{min:0,max:24,messages:{nan:'⚠ Vui lòng nhập số giờ ngủ!',empty:'⚠ Giờ ngủ không được để trống!',tooLow:function(){return'⚠ Giờ ngủ không thể là số âm!';},tooHigh:function(){return'⚠ Một ngày chỉ có 24 tiếng thôi!';},ok:function(v){return v<6?'✓ Hợp lệ (⚠ thiếu ngủ nghiêm trọng)':v<=8?'✓ Hợp lệ (giờ ngủ tốt 👍)':'✓ Hợp lệ (ngủ nhiều)';}}},sleep_bad:{min:0,max:7,messages:{nan:'⚠ Vui lòng nhập số ngày!',empty:'⚠ Không được để trống!',tooLow:function(){return'⚠ Số ngày không thể âm!';},tooHigh:function(){return'⚠ Một tuần chỉ có 7 ngày thôi!';},ok:function(v){return v===0?'✓ Hợp lệ (tuyệt vời!)':'✓ Hợp lệ';}}}};
+var fieldValidity={age:true,bmi:true,sleep:true,sleep_bad:true};
+function validateField(input,key){var rules=VALIDATION_RULES[key];if(!rules)return true;var raw=input.value.trim();var errEl=document.getElementById('err_'+key),okEl=document.getElementById('ok_'+key);var msg='',valid=false;if(raw===''){msg=rules.messages.empty;}else{var v=parseFloat(raw);if(isNaN(v))msg=rules.messages.nan;else if(v<rules.min)msg=typeof rules.messages.tooLow==='function'?rules.messages.tooLow(v):rules.messages.tooLow;else if(v>rules.max)msg=typeof rules.messages.tooHigh==='function'?rules.messages.tooHigh(v):rules.messages.tooHigh;else valid=true;}fieldValidity[key]=valid;if(!valid){input.classList.add('invalid');if(errEl){errEl.textContent=msg;errEl.classList.add('show');}if(okEl)okEl.classList.remove('show');}else{input.classList.remove('invalid');if(errEl)errEl.classList.remove('show');if(okEl){var v2=parseFloat(raw);okEl.textContent=typeof rules.messages.ok==='function'?rules.messages.ok(v2):'✓ Hợp lệ';okEl.classList.add('show');}}return valid;}
+function validateAllFields(){var a=validateField(document.getElementById('ai_age'),'age'),b=validateField(document.getElementById('ai_bmi'),'bmi'),c=validateField(document.getElementById('ai_sleep'),'sleep'),d=validateField(document.getElementById('ai_sleep_bad'),'sleep_bad');if(!a||!b||!c||!d){var first=!a?document.getElementById('ai_age'):!b?document.getElementById('ai_bmi'):!c?document.getElementById('ai_sleep'):document.getElementById('ai_sleep_bad');first.focus();SFX.warn();return false;}return true;}
+
+// ══════════════════════════════════════════════════════════
+// RESIZE HANDLE
+// ══════════════════════════════════════════════════════════
+(function(){var handle=document.getElementById('aiResizeHandle'),middle=document.querySelector('.ai-middle'),rightPnl=document.getElementById('aiRightPanel');if(!handle||!middle||!rightPnl)return;var dragging=false,startX,startMidW,startRightW;handle.addEventListener('mousedown',function(e){dragging=true;startX=e.clientX;startMidW=middle.offsetWidth;startRightW=rightPnl.offsetWidth;handle.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';e.preventDefault();});document.addEventListener('mousemove',function(e){if(!dragging)return;var dx=e.clientX-startX,newMid=Math.max(160,startMidW+dx),newRight=Math.max(260,startRightW-dx);middle.style.width=newMid+'px';middle.style.flexShrink='0';rightPnl.style.flex='none';rightPnl.style.width=newRight+'px';});document.addEventListener('mouseup',function(){if(!dragging)return;dragging=false;handle.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';});})();
+
+// ══════════════════════════════════════════════════════════
+// MENU BG ANIMATIONS
+// ══════════════════════════════════════════════════════════
+var bgC=document.getElementById('bgCanvas'),bgX=bgC.getContext('2d');
+function sizeBG(){bgC.width=window.innerWidth;bgC.height=window.innerHeight;}sizeBG();window.addEventListener('resize',sizeBG);
+var bPts=[];for(var bi=0;bi<55;bi++)bPts.push({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*.0003,vy:(Math.random()-.5)*.0003,sz:Math.random()*1.4+.4,br:Math.random()});
+(function animBG(){var W=bgC.width,H=bgC.height;bgX.fillStyle='rgba(0,0,0,.1)';bgX.fillRect(0,0,W,H);bPts.forEach(function(p){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=1;if(p.x>1)p.x=0;if(p.y<0)p.y=1;if(p.y>1)p.y=0;var bv=Math.abs(Math.sin(Date.now()/2200+p.br*10));bgX.fillStyle='rgba(40,60,100,'+(0.22*bv)+')';bgX.beginPath();bgX.arc(p.x*W,p.y*H,p.sz,0,Math.PI*2);bgX.fill();});requestAnimationFrame(animBG);})();
+(function(){var sc2=document.getElementById('sceneCanvas'),sx3=sc2.getContext('2d');var BLDS=[{x:.00,w:.072,h:.36},{x:.08,w:.058,h:.48},{x:.15,w:.088,h:.30},{x:.25,w:.065,h:.52},{x:.33,w:.088,h:.40},{x:.43,w:.098,h:.45},{x:.54,w:.076,h:.33},{x:.63,w:.088,h:.50},{x:.73,w:.078,h:.38},{x:.82,w:.096,h:.44},{x:.93,w:.07,h:.30}];function draw2(){var W=sc2.offsetWidth,H=sc2.offsetHeight;if(sc2.width!==W||sc2.height!==H){sc2.width=W;sc2.height=H;}sx3.clearRect(0,0,W,H);var t=Date.now()/1000;var sky=sx3.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#020818');sky.addColorStop(.35,'#06102a');sky.addColorStop(.65,'#0a1530');sky.addColorStop(1,'#0c1428');sx3.fillStyle=sky;sx3.fillRect(0,0,W,H);[.12,.34,.56,.78,.23,.67,.45,.89,.11,.55,.33,.77,.22,.44,.66,.88,.15,.37,.59,.81].forEach(function(sv,i){var starX=((sv*1234.5)%1)*W,starY=((sv*678.9+i*.07)%.52)*H,tw=.4+.55*Math.abs(Math.sin(t*.65+i*1.3));sx3.globalAlpha=tw;sx3.fillStyle='#fff';sx3.beginPath();sx3.arc(starX,starY,i%3===0?1.4:i%2===0?.9:.6,0,Math.PI*2);sx3.fill();});sx3.globalAlpha=1;BLDS.forEach(function(b){var bx=b.x*W,bw=b.w*W,bh=b.h*H,by=H-bh;sx3.fillStyle='#060a14';sx3.fillRect(bx,by,bw,bh);for(var wx=bx+4;wx<bx+bw-6;wx+=9){for(var wy=by+5;wy<by+bh-6;wy+=11){if(Math.sin(t*.14+wx*.38+wy*.28)>-.18){var bright=.38+Math.sin(t*.07+wx*.18)*.18;sx3.fillStyle='rgba(255,'+(175+Math.floor((wx*7)%40))+',75,'+bright+')';sx3.fillRect(wx,wy,5,7);}}}});var grd=sx3.createLinearGradient(0,H*.85,0,H);grd.addColorStop(0,'#060a18');grd.addColorStop(1,'#040810');sx3.fillStyle=grd;sx3.fillRect(0,H*.85,W,H*.15);requestAnimationFrame(draw2);}draw2();})();
+document.querySelectorAll('.mbtn').forEach(function(b){b.addEventListener('mouseenter',function(){SFX.click();});});
+startAmbient('menu');
+</script>
+</body>
+</html>
